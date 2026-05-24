@@ -1,0 +1,445 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kitchen Helper</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --accent: #6f725a; --accent-dark: #5a5c4a; --accent-light: #f0ede3;
+      --user-bubble: #6f725a; --user-text: #f4e3b8;
+      --bot-bubble: #fffdf5; --bot-text: #5a5c4a;
+      --border: #d5cfb8; --surface: #f0e4c6; --bg: #fffdf5;
+      --green: #7a9a6a; --green-dark: #5a7a4a; --green-light: #e8f0e0;
+      --red: #d08c60;
+    }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; font-size: 18px; color: #5a5c4a; background: var(--surface); }
+    .hidden { display: none !important; }
+    .app { display: flex; flex-direction: column; height: 100vh; }
+    .header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 18px; background: var(--accent); color: #f0e4c6; flex-shrink: 0;
+    }
+    .header-title { flex: 1; }
+    .header-title h1 { font-family: 'Lora', serif; font-size: 1.2rem; font-weight: 600; }
+    .header-title span { font-size: 0.75rem; opacity: 0.8; }
+    .back-btn, .tts-toggle {
+      background: rgba(244,227,184,0.18); border: 1.5px solid rgba(244,227,184,0.5);
+      border-radius: 999px; padding: 7px 14px; color: #f0e4c6;
+      font-size: 0.78rem; font-family: inherit; font-weight: 500; cursor: pointer;
+      white-space: nowrap; transition: background 0.2s; flex-shrink: 0;
+    }
+    .back-btn:hover, .tts-toggle:hover { background: rgba(244,227,184,0.28); }
+    .tts-toggle.active { background: rgba(244,227,184,0.35); }
+    .main-area { flex: 1; display: flex; overflow: hidden; }
+    .chat-area {
+      flex: 1; overflow-y: auto; padding: 20px 16px;
+      display: flex; flex-direction: column; gap: 16px; background: var(--surface);
+    }
+    .chat-area::-webkit-scrollbar { width: 6px; }
+    .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .welcome-card {
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 16px; padding: 20px; text-align: center;
+    }
+    .welcome-card h2 { font-family: 'Lora', serif; font-size: 1.2rem; color: var(--accent); margin-bottom: 8px; }
+    .welcome-card p { color: #937662; font-size: 0.88rem; margin-bottom: 16px; }
+    .suggestion-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .chip {
+      background: var(--accent-light); color: var(--accent);
+      border: 1.5px solid var(--accent); border-radius: 999px;
+      padding: 8px 16px; font-size: 0.85rem; cursor: pointer;
+      font-family: inherit; font-weight: 500; transition: background 0.2s, color 0.2s;
+    }
+    .chip:hover { background: var(--accent); color: #f0e4c6; }
+    .message { display: flex; gap: 10px; align-items: flex-start; max-width: 92%; }
+    .message.user { align-self: flex-end; flex-direction: row-reverse; }
+    .message.bot  { align-self: flex-start; }
+    .avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; flex-shrink: 0; font-weight: 600;
+    }
+    .message.user .avatar { background: var(--accent-dark); color: #f0e4c6; }
+    .message.bot  .avatar { background: var(--accent-light); color: var(--accent); border: 1.5px solid var(--accent); }
+    .msg-body { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+    .bubble {
+      border-radius: 16px; padding: 12px 16px; font-size: 0.95rem;
+      line-height: 1.65; white-space: pre-wrap; word-break: break-word;
+    }
+    .message.user .bubble { background: var(--user-bubble); color: var(--user-text); border-bottom-right-radius: 4px; }
+    .message.bot  .bubble { background: var(--bot-bubble);  color: var(--bot-text);  border-bottom-left-radius: 4px; border: 1px solid var(--border); }
+    .msg-actions { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 4px; align-items: center; }
+    .replay-btn {
+      background: none; border: 1px solid var(--border); border-radius: 999px;
+      padding: 4px 12px; font-size: 0.72rem; font-family: inherit;
+      color: #937662; cursor: pointer; transition: border-color 0.2s, color 0.2s;
+    }
+    .replay-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .madeit-btn {
+      background: var(--green); color: #fff; border: none; border-radius: 999px;
+      padding: 4px 14px; font-size: 0.72rem; font-family: inherit;
+      font-weight: 600; cursor: pointer; transition: background 0.2s;
+    }
+    .madeit-btn:hover:not(:disabled) { background: var(--green-dark); }
+    .madeit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+    .typing-indicator { display: flex; gap: 5px; align-items: center; padding: 12px 16px; }
+    .typing-indicator span {
+      width: 9px; height: 9px; border-radius: 50%; background: var(--accent);
+      animation: bounce 1.2s infinite; display: inline-block;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,80%,100%{transform:translateY(0);opacity:0.5} 40%{transform:translateY(-7px);opacity:1} }
+    .error-msg {
+      background: #fee8d8; color: #b87a51; border: 1px solid #f5c6a0;
+      border-radius: 10px; padding: 10px 14px; font-size: 0.88rem; text-align: center;
+    }
+    .timer-panel {
+      width: 200px; flex-shrink: 0; background: var(--bg);
+      border-left: 1.5px solid var(--border); overflow-y: auto;
+      padding: 14px 12px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .timer-panel-header {
+      font-size: 0.75rem; font-weight: 600; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      padding-bottom: 8px; border-bottom: 1.5px solid var(--border);
+    }
+    .timer-card {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 12px 10px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .timer-card.timer-running { border-color: var(--green); background: var(--green-light); }
+    .timer-card.timer-done    { border-color: var(--accent); background: var(--accent-light); }
+    .timer-label { font-size: 0.72rem; font-weight: 600; color: #937662; text-transform: uppercase; letter-spacing: 0.06em; }
+    .timer-display { font-size: 1.8rem; font-weight: 700; font-variant-numeric: tabular-nums; color: #5a5c4a; line-height: 1; }
+    .timer-card.timer-running .timer-display { color: var(--green); }
+    .timer-card.timer-done    .timer-display { color: var(--accent); }
+    .timer-controls { display: flex; gap: 6px; width: 100%; }
+    .timer-btn {
+      flex: 1; border: none; border-radius: 7px; padding: 7px 4px;
+      font-size: 0.75rem; font-weight: 600; font-family: inherit; cursor: pointer;
+    }
+    .timer-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .timer-start { background: var(--green); color: #fff; }
+    .timer-start:hover:not(:disabled) { background: var(--green-dark); }
+    .timer-card.timer-running .timer-start { background: var(--red); }
+    .timer-reset { background: var(--border); color: #5a5c4a; }
+    .input-bar {
+      display: flex; align-items: flex-end; gap: 10px;
+      padding: 14px 16px; background: var(--bg);
+      border-top: 1.5px solid var(--border); flex-shrink: 0;
+    }
+    #user-input {
+      flex: 1; resize: none; border: 1.5px solid var(--border); border-radius: 12px;
+      padding: 12px 14px; font-size: 1rem; font-family: inherit; color: #434438;
+      background: var(--bg); outline: none; min-height: 48px; max-height: 140px;
+      line-height: 1.5; transition: border-color 0.2s;
+    }
+    #user-input:focus { border-color: var(--accent); }
+    #user-input::placeholder { color: #94947e; }
+    .send-btn {
+      background: var(--accent); color: #f0e4c6; border: none; border-radius: 12px;
+      padding: 12px 20px; font-size: 0.95rem; font-weight: 600; font-family: inherit;
+      cursor: pointer; flex-shrink: 0; transition: background 0.2s; min-width: 70px;
+    }
+    .send-btn:hover:not(:disabled) { background: var(--accent-dark); }
+    .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    @media (max-width: 600px) {
+      .timer-panel { width: 100%; border-left: none; border-top: 1.5px solid var(--border); flex-direction: row; flex-wrap: wrap; max-height: 160px; padding: 10px; }
+      .main-area   { flex-direction: column; }
+      .timer-card  { flex: 1; min-width: 120px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <button id="back-btn" class="back-btn">← Back</button>
+    <div class="header-title">
+      <h1>Kitchen Helper</h1>
+      <span>Cooking &amp; grocery assistant</span>
+    </div>
+    <button id="tts-toggle" class="tts-toggle">Voice: OFF</button>
+  </header>
+
+  <div class="main-area">
+    <main id="chat-area" class="chat-area" role="log" aria-live="polite">
+      <div id="welcome-card" class="welcome-card">
+        <h2>Hello! How can I help today?</h2>
+        <p>Ask me for a recipe, help with groceries, or cooking tips.</p>
+        <div class="suggestion-chips">
+          <button class="chip" data-msg="What can I make with chicken, potatoes, and onions?">Recipe idea</button>
+          <button class="chip" data-msg="Make me a grocery list for a simple pasta dinner for 2.">Grocery list</button>
+          <button class="chip" data-msg="How do I boil eggs?">Cooking tip</button>
+          <button class="chip" data-msg="What are some easy meals I can cook in 20 minutes?">Quick meals</button>
+        </div>
+      </div>
+    </main>
+
+    <aside id="timer-panel" class="timer-panel hidden">
+      <div class="timer-panel-header">Timers</div>
+      <div id="timer-list"></div>
+    </aside>
+  </div>
+
+  <footer class="input-bar">
+    <textarea id="user-input" rows="1" placeholder="Type your question… (Enter to send)" autofocus></textarea>
+    <button id="send-btn" class="send-btn">Send</button>
+  </footer>
+</div>
+
+<script>
+  const API_URL = "/api/chat";
+
+  const params         = new URLSearchParams(window.location.search);
+  const cookingMode    = params.get("mode")     || "general";
+  const cookingDish    = params.get("dish")     || "";
+  const timerRemaining = parseInt(params.get("timer") || "0");
+  const groceryList    = (params.get("groceries") || "").split(",").filter(Boolean);
+
+  let history     = [];
+  let ttsEnabled  = false;
+  let isSending   = false;
+  let timerMap    = new Map();
+  let timerCounter = 0;
+
+  const chatArea    = document.getElementById("chat-area");
+  const userInput   = document.getElementById("user-input");
+  const sendBtn     = document.getElementById("send-btn");
+  const ttsToggle   = document.getElementById("tts-toggle");
+  const backBtn     = document.getElementById("back-btn");
+  const welcomeCard = document.getElementById("welcome-card");
+  const timerPanel  = document.getElementById("timer-panel");
+  const timerList   = document.getElementById("timer-list");
+
+  if (cookingMode === "cooking" && cookingDish) {
+    setTimeout(() => {
+      addMessage("bot", `I see you're cooking ${cookingDish}! Ask me for step-by-step help, tips, or how long to cook it.`);
+    }, 400);
+  }
+
+  backBtn.addEventListener("click", () => {
+    if (window.history.length > 1) window.history.back();
+    else window.location.href = "/elder";
+  });
+
+  // ── TTS ───────────────────────────────────────────────────────
+  function speakText(text) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 0.88; utt.pitch = 1; utt.lang = "en-US";
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v => v.name.includes("Samantha") || v.name.includes("Karen"));
+    if (preferred) utt.voice = preferred;
+    window.speechSynthesis.speak(utt);
+  }
+  function speak(text) { if (ttsEnabled) speakText(text); }
+  ttsToggle.addEventListener("click", () => {
+    ttsEnabled = !ttsEnabled;
+    ttsToggle.classList.toggle("active", ttsEnabled);
+    ttsToggle.textContent = ttsEnabled ? "Voice: ON" : "Voice: OFF";
+    if (!ttsEnabled) window.speechSynthesis?.cancel();
+  });
+
+  // ── UI helpers ────────────────────────────────────────────────
+  function scrollToBottom() { chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: "smooth" }); }
+
+  // ── Recipe detection + "I made it" ───────────────────────────
+  function isRecipe(text) { return text.includes("WHAT YOU NEED:"); }
+
+  function parseRecipeTitle(text) {
+    const line = text.split("\n").map(l => l.trim()).find(l => l.length > 0);
+    return line || "Dish";
+  }
+
+  function parseIngredients(text) {
+    const start = text.indexOf("WHAT YOU NEED:");
+    if (start === -1) return [];
+    const end = text.indexOf("HOW TO MAKE IT:");
+    const section = end !== -1 ? text.substring(start + 14, end) : text.substring(start + 14);
+    return section.split("\n")
+      .map(line => line.replace(/^\d+\.\s*/, "").replace(/\(need to buy\)/gi, "").trim())
+      .filter(line => line.length > 2);
+  }
+
+  async function addCooked(dish, ingredients, btn) {
+    btn.disabled = true; btn.textContent = "Saving…";
+    try {
+      const res = await fetch("/api/pantry/add-cooked", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dish, ingredients })
+      });
+      const data = await res.json();
+      const removed = (data.removed || []).length;
+      let label = `✓ Added to pantry`;
+      if (removed) label += ` · ${removed} ingredient${removed > 1 ? "s" : ""} used`;
+      if (data.eat_by) label += ` · Eat by: ${data.eat_by}`;
+      btn.textContent = label;
+      btn.style.background = "var(--green-dark)";
+    } catch {
+      btn.textContent = "Error"; btn.disabled = false;
+    }
+  }
+
+  // ── Message rendering ─────────────────────────────────────────
+  function addMessage(role, text) {
+    const wrapper = document.createElement("div");
+    wrapper.className = `message ${role}`;
+    const avatar = document.createElement("div");
+    avatar.className = "avatar";
+    avatar.textContent = role === "user" ? "You" : "AI";
+    if (role === "user") {
+      const bubble = document.createElement("div");
+      bubble.className = "bubble"; bubble.textContent = text;
+      wrapper.appendChild(avatar); wrapper.appendChild(bubble);
+    } else {
+      const msgBody = document.createElement("div"); msgBody.className = "msg-body";
+      const bubble  = document.createElement("div"); bubble.className = "bubble"; bubble.textContent = text;
+      const actions = document.createElement("div"); actions.className = "msg-actions";
+      const replay  = document.createElement("button"); replay.className = "replay-btn"; replay.textContent = "Replay";
+      replay.addEventListener("click", () => speakText(text));
+      actions.appendChild(replay);
+      if (isRecipe(text)) {
+        const madeIt = document.createElement("button");
+        madeIt.className = "madeit-btn"; madeIt.textContent = "✓ I made it";
+        madeIt.addEventListener("click", () => addCooked(parseRecipeTitle(text), parseIngredients(text), madeIt));
+        actions.appendChild(madeIt);
+      }
+      msgBody.appendChild(bubble); msgBody.appendChild(actions);
+      wrapper.appendChild(avatar); wrapper.appendChild(msgBody);
+    }
+    chatArea.appendChild(wrapper);
+    scrollToBottom();
+  }
+
+  function addTypingIndicator() {
+    const w = document.createElement("div"); w.className = "message bot"; w.id = "typing";
+    const a = document.createElement("div"); a.className = "avatar"; a.textContent = "AI";
+    const b = document.createElement("div"); b.className = "bubble typing-indicator";
+    b.innerHTML = "<span></span><span></span><span></span>";
+    w.appendChild(a); w.appendChild(b); chatArea.appendChild(w); scrollToBottom();
+  }
+  function removeTypingIndicator() { document.getElementById("typing")?.remove(); }
+
+  function showError(msg) {
+    const el = document.createElement("div"); el.className = "error-msg"; el.textContent = msg;
+    chatArea.appendChild(el); scrollToBottom();
+    setTimeout(() => el.remove(), 6000);
+  }
+
+  // ── In-chat timers ────────────────────────────────────────────
+  const COOKING_VERBS = new Set(["boil","simmer","cook","bake","roast","fry","saute","sauté","steam","heat","warm","cool","chill","rest","reduce","marinate","soak","brown","toast","grill","broil","poach","braise","soften","drain","stand","let","set"]);
+
+  function extractTimers(text) {
+    const results = []; const seen = new Set();
+    const re = /\bfor\s+(\d+)\s*(hours?|hrs?|minutes?|mins?)\b/gi;
+    let match;
+    while ((match = re.exec(text)) !== null) {
+      const amount = parseInt(match[1]);
+      const unit   = match[2].toLowerCase();
+      const seconds = (unit.startsWith("hour") || unit.startsWith("hr")) ? amount * 3600 : amount * 60;
+      const lineStart  = text.lastIndexOf("\n", match.index) + 1;
+      const linePrefix = text.substring(lineStart, match.index);
+      if (/^\s*(time:|total\s*time:|prep\s*time:|cook\s*time:|serves:|serving:|\|)/i.test(linePrefix)) continue;
+      const words = linePrefix.toLowerCase().split(/\W+/);
+      let label = "Timer";
+      for (let i = words.length - 1; i >= 0; i--) { if (COOKING_VERBS.has(words[i])) { label = words[i].charAt(0).toUpperCase() + words[i].slice(1); break; } }
+      const key = `${label.toLowerCase()}-${seconds}`;
+      if (!seen.has(key) && seconds > 0 && seconds <= 14400) { seen.add(key); results.push({ label, totalSeconds: seconds }); }
+    }
+    return results;
+  }
+
+  function formatTime(s) { return `${Math.floor(s/60).toString().padStart(2,"0")}:${(s%60).toString().padStart(2,"0")}`; }
+
+  function addTimersFromResponse(text) { extractTimers(text).forEach(({ label, totalSeconds }) => addTimer(label, totalSeconds)); }
+
+  function addTimer(label, totalSeconds) {
+    const id    = ++timerCounter;
+    const timer = { id, label, totalSeconds, remaining: totalSeconds, running: false, intervalId: null };
+    timerMap.set(id, timer);
+    const card  = document.createElement("div"); card.className = "timer-card"; card.id = `timer-${id}`;
+    const lbl   = document.createElement("div"); lbl.className = "timer-label"; lbl.textContent = label;
+    const disp  = document.createElement("div"); disp.className = "timer-display"; disp.textContent = formatTime(totalSeconds);
+    const ctrl  = document.createElement("div"); ctrl.className = "timer-controls";
+    const ss    = document.createElement("button"); ss.className = "timer-btn timer-start"; ss.textContent = "Start";
+    ss.addEventListener("click", () => toggleTimer(id));
+    const rst   = document.createElement("button"); rst.className = "timer-btn timer-reset"; rst.textContent = "Reset";
+    rst.addEventListener("click", () => resetTimer(id));
+    ctrl.appendChild(ss); ctrl.appendChild(rst);
+    card.appendChild(lbl); card.appendChild(disp); card.appendChild(ctrl);
+    timerList.appendChild(card);
+    timerPanel.classList.remove("hidden");
+  }
+
+  function updateTimerDisplay(id) {
+    const timer = timerMap.get(id); const card = document.getElementById(`timer-${id}`);
+    if (!timer || !card) return;
+    card.querySelector(".timer-display").textContent = formatTime(timer.remaining);
+    const btn = card.querySelector(".timer-start");
+    if (timer.remaining === 0) { btn.textContent = "Done"; btn.disabled = true; }
+    else { btn.textContent = timer.running ? "Stop" : "Start"; btn.disabled = false; }
+    card.classList.toggle("timer-running", timer.running);
+    card.classList.toggle("timer-done",    timer.remaining === 0);
+  }
+
+  function toggleTimer(id) {
+    const timer = timerMap.get(id); if (!timer || timer.remaining === 0) return;
+    if (timer.running) {
+      clearInterval(timer.intervalId); timer.running = false; timer.intervalId = null;
+    } else {
+      timer.running = true;
+      timer.intervalId = setInterval(() => {
+        timer.remaining = Math.max(0, timer.remaining - 1);
+        if (timer.remaining === 0) { clearInterval(timer.intervalId); timer.intervalId = null; timer.running = false; speakText(`Your ${timer.label} timer is done!`); }
+        updateTimerDisplay(id);
+      }, 1000);
+    }
+    updateTimerDisplay(id);
+  }
+
+  function resetTimer(id) {
+    const timer = timerMap.get(id); if (!timer) return;
+    clearInterval(timer.intervalId); timer.intervalId = null; timer.running = false;
+    timer.remaining = timer.totalSeconds; updateTimerDisplay(id);
+  }
+
+  // ── Send ──────────────────────────────────────────────────────
+  userInput.addEventListener("input", () => { userInput.style.height = "auto"; userInput.style.height = Math.min(userInput.scrollHeight, 140) + "px"; });
+
+  async function sendMessage(text) {
+    text = text.trim(); if (!text || isSending) return;
+    isSending = true; sendBtn.disabled = true; userInput.disabled = true;
+    welcomeCard.classList.add("hidden");
+    addMessage("user", text); userInput.value = ""; userInput.style.height = "auto";
+    addTypingIndicator();
+    const context = { mode: cookingMode, dish: cookingDish, timer_remaining: timerRemaining, grocery_list: groceryList };
+    try {
+      const res  = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text, history, context }) });
+      const data = await res.json();
+      removeTypingIndicator();
+      if (!res.ok) { showError(data.error || "Something went wrong. Please try again."); return; }
+      const reply = data.response || "";
+      addMessage("bot", reply); speak(reply); addTimersFromResponse(reply);
+      history.push({ role: "user", content: text });
+      history.push({ role: "model", content: reply });
+    } catch {
+      removeTypingIndicator(); showError("Could not reach the server. Is the backend running?");
+    } finally {
+      isSending = false; sendBtn.disabled = false; userInput.disabled = false; userInput.focus();
+    }
+  }
+
+  sendBtn.addEventListener("click", () => sendMessage(userInput.value));
+  userInput.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(userInput.value); } });
+  document.querySelectorAll(".chip").forEach(chip => { chip.addEventListener("click", () => sendMessage(chip.dataset.msg)); });
+  window.speechSynthesis?.addEventListener("voiceschanged", () => {});
+</script>
+</body>
+</html>

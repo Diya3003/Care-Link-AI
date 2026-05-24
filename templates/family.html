@@ -1,0 +1,942 @@
+<!DOCTYPE html><!--f0e4c6-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caregiver Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sidebar-width: 60px;
+      --sidebar-bg: #51543d;
+      --sidebar-text: #f0e4c6;
+      --sidebar-muted: rgba(240,228,198,0.65);
+      --accent: #d08c60;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #363926; min-height: 100vh; }
+    .page-shell { width: 100%; }
+    .main-panel { margin-left: var(--sidebar-width); min-width: 0; max-width: 100%; }
+
+    /* ── Sidebar ── */
+    .side-menu { position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh; color: var(--sidebar-text); padding: 16px 0; background-color: var(--sidebar-bg); z-index: 100; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .menu-link { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 100%; padding: 11px 0; text-decoration: none; color: var(--sidebar-text); background: transparent; border: none; cursor: pointer; transition: all 0.2s; position: relative; }
+    .menu-link:hover { opacity: 0.85; }
+    .menu-link.active { background: rgba(255,255,255,0.1); }
+    .menu-link.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: var(--accent); border-radius: 0 3px 3px 0; }
+    .menu-emoji { font-size: 20px; line-height: 1; }
+    .menu-link.active .menu-emoji { filter: drop-shadow(0 0 4px rgba(208,140,96,0.6)); }
+    .nav-label { font-size: 9px; color: var(--sidebar-muted); letter-spacing: 0.3px; font-family: 'Inter', sans-serif; }
+    .menu-link.active .nav-label { color: #ffd485; }
+
+    /* ── Header ── */
+    .app-header { background: #363926; padding: 26px 20px 16px; text-align: center; }
+    .app-header h1 { font-family: 'Lora', serif; font-size: 21px; font-weight: 600; color: #f0e4c6; margin-bottom: 2px; }
+    .app-header p  { font-size: 11px; color: rgba(244,227,184,0.7); font-weight: 300; }
+    .live-dot { display: inline-block; width: 7px; height: 7px; background: #7dba6e; border-radius: 50%; margin-right: 5px; animation: ldot 2s infinite; }
+    @keyframes ldot { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    #lastSync { font-size: 11px; color: rgba(244,227,184,0.6); margin-top: 4px; }
+
+    /* ── Status pills ── */
+    .status-bar { display: flex; gap: 8px; padding: 0 14px 16px; background: #363926; }
+    .status-pill { flex: 1; background: rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 8px; text-align: center; }
+    .status-pill-num   { font-size: 20px; font-weight: 500; color: #ffd485; font-family: 'Lora', serif; }
+    .status-pill-label { font-size: 9px; color: rgba(244,227,184,0.75); margin-top: 2px; letter-spacing: 0.4px; }
+
+    /* ── Content area ── */
+    .content { background: #f0e4c6; border-radius: 24px 24px 0 0; padding: 20px 16px 60px; min-height: calc(100vh - 160px); }
+
+    /* ── Tab pages ── */
+    .tab-page { display: none; }
+    .tab-page.active { display: block; }
+
+    /* ── Page title ── */
+    .page-title { font-family: 'Lora', serif; font-size: 19px; font-weight: 600; color: #6f725a; margin-bottom: 16px; }
+
+    /* ── Overdue banner ── */
+    .overdue-banner { display: none; background: var(--accent); border-radius: 14px; padding: 12px 16px; margin-bottom: 16px; }
+    .ob-title { font-size: 13px; font-weight: 600; color: #fffdf5; margin-bottom: 3px; font-family: 'Lora', serif; }
+    .ob-sub   { font-size: 11px; color: rgba(255,253,245,0.85); margin-bottom: 10px; }
+    .ob-row   { display: flex; gap: 8px; align-items: center; }
+    .ob-phone { flex: 1; padding: 8px 12px; border: 1.5px solid rgba(255,253,245,0.4); border-radius: 10px; font-size: 12px; background: rgba(255,253,245,0.15); color: #fffdf5; outline: none; }
+    .ob-phone::placeholder { color: rgba(255,253,245,0.5); }
+    .ob-remind { padding: 8px 14px; background: rgba(255,253,245,0.25); color: #fffdf5; border: 1.5px solid rgba(255,253,245,0.5); border-radius: 10px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+
+    /* ── Cards ── */
+    .card { background: #fffdf5; border-radius: 16px; padding: 18px; box-shadow: 0 2px 14px rgba(111,114,90,0.1); border: 1px solid rgba(155,155,122,0.2); margin-bottom: 16px; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(155,155,122,0.15); }
+    .card-title  { font-family: 'Lora', serif; font-size: 15px; font-weight: 500; color: #6f725a; }
+    .badge     { background: #ffd485; color: #6f725a; font-size: 10px; font-weight: 500; padding: 3px 9px; border-radius: 20px; }
+    .badge-red { background: var(--accent); color: white; }
+
+    /* ── Config rows ── */
+    .config-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .config-row label { font-size: 11px; color: #937662; white-space: nowrap; letter-spacing: 0.3px; }
+    .config-row input, .config-row select { flex: 1; padding: 8px 11px; border: 1.5px solid rgba(155,155,122,0.35); border-radius: 10px; font-size: 13px; color: #5a5c4a; background: #fdf8ed; outline: none; min-width: 0; font-family: 'Inter', sans-serif; }
+    .config-row input:focus, .config-row select:focus { border-color: var(--accent); }
+
+    /* ── Grocery actions ── */
+    .grocery-actions { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid rgba(155,155,122,0.15); }
+    .add-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .add-input { flex: 1; padding: 10px 13px; border: 1.5px solid rgba(155,155,122,0.3); border-radius: 10px; font-size: 13px; color: #5a5c4a; background: #fdf8ed; font-family: 'Inter', sans-serif; outline: none; transition: all 0.2s; min-width: 80px; }
+    .add-input:focus { border-color: var(--accent); background: white; }
+    .add-input::placeholder { color: #b5b49a; }
+    .add-btn { width: 40px; height: 40px; background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .add-btn:hover { background: #b87a51; }
+    .wa-btn { width: 100%; padding: 10px; background: #25d366; color: #fff; border: none; border-radius: 11px; font-size: 13px; font-family: 'Lora', serif; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .wa-btn:hover { background: #1da851; }
+
+    /* ── Stats ── */
+    .stats { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+    .stat-badge { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px; }
+    .sb-gray   { background: #f3f4f6; color: #6b7280; }
+    .sb-red    { background: #fee2e2; color: #b91c1c; }
+    .sb-purple { background: #ede9fe; color: #7c3aed; }
+    .sb-green  { background: #d1fae5; color: #065f46; }
+
+    /* ── Grocery items ── */
+    .grocery-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #fdf8ed; border-radius: 10px; border: 1px solid rgba(155,155,122,0.15); margin-bottom: 7px; }
+    .grocery-item input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; border: 2px solid #9b9b7a; border-radius: 5px; cursor: pointer; flex-shrink: 0; background: white; position: relative; transition: all 0.2s; }
+    .grocery-item input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+    .grocery-item input[type="checkbox"]:checked::after { content: ''; position: absolute; left: 4px; top: 1px; width: 5px; height: 8px; border: 2px solid white; border-top: none; border-left: none; transform: rotate(45deg); }
+    .grocery-item label { flex: 1; font-size: 14px; color: #5a5c4a; cursor: pointer; }
+    .grocery-item input[type="checkbox"]:checked + label { color: #b5b49a; text-decoration: line-through; }
+    .grocery-item .item-who  { font-size: 10px; color: #7c3aed; font-style: italic; }
+    .grocery-item .item-tag  { font-size: 10px; background: rgba(155,155,122,0.2); color: #937662; padding: 2px 7px; border-radius: 8px; flex-shrink: 0; }
+    .grocery-item .item-tag.caregiver { background: rgba(208,140,96,0.15); color: var(--accent); }
+    .grocery-item .item-date { font-size: 10px; color: #059669; }
+    .claim-btn { padding: 3px 9px; background: #ede9fe; color: #6d28d9; border: none; border-radius: 8px; font-size: 11px; cursor: pointer; flex-shrink: 0; }
+    .del-btn   { background: none; border: none; color: #c9b9a8; font-size: 16px; cursor: pointer; flex-shrink: 0; }
+    .del-btn:hover { color: var(--accent); }
+    .delivery-input { font-size: 11px; border: 1px solid rgba(155,155,122,0.35); border-radius: 6px; padding: 2px 6px; color: #374151; outline: none; background: white; }
+
+    /* ── Pantry items ── */
+    .pantry-row { display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: #fdf8ed; border-radius: 10px; border: 1px solid rgba(155,155,122,0.15); margin-bottom: 7px; }
+    .pantry-row-name { flex: 1; font-size: 13px; color: #5a5c4a; }
+    .expiry-pill { font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 500; flex-shrink: 0; }
+    .expiry-ok     { background: rgba(111,114,90,0.1); color: #6f725a; }
+    .expiry-soon   { background: rgba(208,140,96,0.18); color: #b87a51; }
+    .expiry-urgent { background: rgba(192,57,43,0.12); color: #c0392b; }
+
+    /* ── Med items ── */
+    .med-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: #fdf8ed; border-radius: 11px; border: 1px solid rgba(155,155,122,0.18); margin-bottom: 9px; }
+    .med-icon { font-size: 18px; flex-shrink: 0; }
+    .med-info { flex: 1; min-width: 0; }
+    .med-name   { font-size: 14px; font-weight: 500; color: #5a5c4a; }
+    .med-detail { font-size: 11px; color: #937662; margin-top: 2px; }
+    .med-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+    .status-chip { font-size: 10px; padding: 3px 9px; border-radius: 12px; font-weight: 500; }
+    .status-chip.taken    { background: rgba(155,155,122,0.2); color: #6f725a; }
+    .status-chip.pending  { background: rgba(208,140,96,0.2); color: var(--accent); }
+    .status-chip.snoozed  { background: rgba(255,212,133,0.4); color: #937662; }
+    .status-chip.upcoming { background: rgba(155,155,122,0.1); color: #9b9b7a; }
+    .remind-btn { padding: 4px 10px; background: #6f725a; color: #f0e4c6; border: none; border-radius: 8px; font-size: 11px; cursor: pointer; }
+    .remind-btn:hover { background: #5a5c4a; }
+    .med-del-btn { background: none; border: none; color: #c9b9a8; font-size: 16px; cursor: pointer; }
+    .med-del-btn:hover { color: var(--accent); }
+
+    /* ── Reminder items ── */
+    .reminder-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: #fdf8ed; border-radius: 11px; border: 1px solid rgba(155,155,122,0.18); margin-bottom: 9px; }
+    .reminder-icon { font-size: 18px; flex-shrink: 0; }
+    .reminder-info { flex: 1; min-width: 0; }
+    .reminder-title  { font-size: 14px; font-weight: 500; color: #5a5c4a; }
+    .reminder-detail { font-size: 11px; color: #937662; margin-top: 2px; }
+
+    /* ── Add form ── */
+    .add-form { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(155,155,122,0.2); }
+    .form-row { display: flex; gap: 8px; margin-bottom: 7px; flex-wrap: wrap; }
+    .form-group { flex: 1; min-width: 100px; }
+    .form-label { font-size: 10px; color: #937662; letter-spacing: 0.4px; font-weight: 500; margin-bottom: 4px; }
+    .form-input { width: 100%; padding: 10px 12px; border: 1.5px solid rgba(155,155,122,0.3); border-radius: 10px; font-size: 13px; color: #5a5c4a; background: #fdf8ed; font-family: 'Inter', sans-serif; outline: none; }
+    .form-input:focus { border-color: var(--accent); background: white; }
+    .form-input::placeholder { color: #b5b49a; }
+    .submit-btn { width: 100%; padding: 12px; background: #6f725a; color: #f0e4c6; border: none; border-radius: 11px; font-size: 13px; font-family: 'Lora', serif; font-weight: 500; cursor: pointer; margin-top: 4px; transition: all 0.2s; }
+    .submit-btn:hover { background: #5a5c4a; }
+
+    /* ── Section divider ── */
+    .section-divider { font-family: 'Lora', serif; font-size: 12px; font-weight: 600; color: #937662; letter-spacing: 0.6px; text-transform: uppercase; margin: 20px 0 12px; display: flex; align-items: center; gap: 8px; }
+    .section-divider::after { content: ''; flex: 1; height: 1px; background: rgba(155,155,122,0.3); }
+
+    /* ── Stove monitor ── */
+    .stove-inner { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 8px 0; gap: 6px; }
+    .stove-icon { font-size: 2rem; }
+    .stove-icon.pulse { animation: sp 1s ease-in-out infinite; }
+    @keyframes sp { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+    .stove-label { font-size: 15px; font-weight: 600; color: #5a5c4a; }
+    .stove-sub   { font-size: 12px; color: #937662; }
+    .countdown   { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; color: #5a5c4a; font-family: 'Lora', serif; }
+    .countdown.urgent { color: var(--accent); }
+    .wa-alert-btn { margin-top: 8px; width: 100%; padding: 10px; background: #fee2e2; color: #b91c1c; border: none; border-radius: 10px; font-size: 13px; cursor: pointer; }
+
+    /* ── Activity ── */
+    .act-row { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; border-bottom: 1px solid rgba(155,155,122,0.15); }
+    .act-row:last-child { border-bottom: none; }
+    .act-label { color: #937662; }
+    .act-value { font-weight: 500; color: #5a5c4a; text-align: right; max-width: 55%; }
+
+    /* ── Notes ── */
+    .notes-ta { width: 100%; padding: 11px 14px; border: 1.5px solid rgba(155,155,122,0.3); border-radius: 10px; font-size: 13px; resize: vertical; min-height: 80px; background: #fdf8ed; color: #5a5c4a; font-family: 'Inter', sans-serif; outline: none; }
+    .notes-ta:focus { border-color: var(--accent); }
+
+    /* ── Insights ── */
+    .insights-stub { background: #f0e4c6; border: 1.5px dashed rgba(155,155,122,0.5); border-radius: 10px; padding: 14px; text-align: center; color: #937662; font-size: 13px; min-height: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+    .insight-chip  { background: #ede9fe; color: #6d28d9; border-radius: 8px; padding: 4px 10px; font-size: 12px; display: inline-block; margin: 2px; }
+
+    /* ── Toggle switches ── */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(155,155,122,0.15); }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-info { flex: 1; }
+    .toggle-label { font-size: 14px; color: #5a5c4a; font-weight: 500; }
+    .toggle-desc  { font-size: 11px; color: #937662; margin-top: 2px; }
+    .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; margin-left: 12px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track { position: absolute; inset: 0; background: rgba(155,155,122,0.35); border-radius: 24px; cursor: pointer; transition: background 0.25s; }
+    .toggle input:checked + .toggle-track { background: var(--accent); }
+    .toggle-track::after { content: ''; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: transform 0.25s; }
+    .toggle input:checked + .toggle-track::after { transform: translateX(20px); }
+
+    /* ── Empty state ── */
+    .empty-state { font-size: 13px; color: #b5b49a; text-align: center; padding: 14px 0; font-style: italic; }
+
+    /* ── Toast ── */
+    .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(10px); background: #6f725a; color: #f0e4c6; padding: 11px 22px; border-radius: 12px; font-size: 13px; font-family: 'Lora', serif; opacity: 0; transition: all 0.3s; z-index: 1000; white-space: nowrap; box-shadow: 0 4px 16px rgba(111,114,90,0.3); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="page-shell">
+
+  <!-- ── Sidebar ── -->
+  <aside class="side-menu" aria-label="Navigation">
+    <button class="menu-link active" data-tab="grocery" onclick="switchTab('grocery',this)">
+      <span class="menu-emoji">🧺</span><span class="nav-label">List</span>
+    </button>
+    <button class="menu-link" data-tab="pantry" onclick="switchTab('pantry',this)">
+      <span class="menu-emoji">📦</span><span class="nav-label">Pantry</span>
+    </button>
+    <button class="menu-link" data-tab="reminders" onclick="switchTab('reminders',this)">
+      <span class="menu-emoji">💊</span><span class="nav-label">Meds</span>
+    </button>
+    <button class="menu-link" data-tab="monitor" onclick="switchTab('monitor',this)">
+      <span class="menu-emoji">🏠</span><span class="nav-label">Live</span>
+    </button>
+    <button class="menu-link" data-tab="insights" onclick="switchTab('insights',this)">
+      <span class="menu-emoji">✨</span><span class="nav-label">AI</span>
+    </button>
+    <button class="menu-link" data-tab="settings" onclick="switchTab('settings',this)">
+      <span class="menu-emoji">⚙️</span><span class="nav-label">Settings</span>
+    </button>
+  </aside>
+
+  <!-- ── Main panel ── -->
+  <main class="main-panel">
+
+    <div class="app-header">
+      <h1>Caregiver Dashboard</h1>
+      <p>Stay connected with your loved one</p>
+      <div id="lastSync"><span class="live-dot"></span>Connecting…</div>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-pill">
+        <div class="status-pill-num" id="statGroceries">0</div>
+        <div class="status-pill-label">GROCERY</div>
+      </div>
+      <div class="status-pill">
+        <div class="status-pill-num" id="statPantry">0</div>
+        <div class="status-pill-label">PANTRY</div>
+      </div>
+      <div class="status-pill">
+        <div class="status-pill-num" id="statMeds">0</div>
+        <div class="status-pill-label">MEDICATIONS</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── TAB: GROCERY LIST ── -->
+      <div class="tab-page active" id="tab-grocery">
+        <div class="page-title">🧺 Grocery List</div>
+
+        <div class="overdue-banner" id="overdueBanner">
+          <div class="ob-title">⚠️ Grocery list hasn't been updated</div>
+          <div class="ob-sub" id="overdueSub"></div>
+          <div class="ob-row">
+            <input class="ob-phone" type="tel" id="elderPhoneRemind" placeholder="Elder's WhatsApp number">
+            <button class="ob-remind" onclick="sendReminder()">📲 Remind</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Shopping list</span>
+            <span class="badge" id="groceryBadge">0 items</span>
+          </div>
+          <div class="grocery-actions">
+            <div class="add-row">
+              <input type="text" class="add-input" id="newGrocery" placeholder="Add an item…" onkeydown="if(event.key==='Enter')addGrocery()">
+              <button class="add-btn" onclick="addGrocery()">+</button>
+            </div>
+            <button class="wa-btn" onclick="sendUpdateToElder()">📲 Send coordination update to elder</button>
+            <div class="config-row" style="margin-bottom:0;">
+              <label>REMIND ELDER EVERY</label>
+              <select id="reminderFreq" onchange="saveFrequency()">
+                <option value="1">Daily</option>
+                <option value="3" selected>Every 3 days</option>
+                <option value="7">Weekly</option>
+              </select>
+            </div>
+          </div>
+          <div class="stats" id="listStats"></div>
+          <div id="groceryList"><p class="empty-state">No items yet</p></div>
+        </div>
+      </div>
+
+      <!-- ── TAB: PANTRY ── -->
+      <div class="tab-page" id="tab-pantry">
+        <div class="page-title">📦 Pantry</div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Pantry items</span>
+            <span class="badge" id="pantryBadge">0 items</span>
+          </div>
+          <div id="pantryItemsList"><p class="empty-state">Pantry is empty.</p></div>
+          <div class="add-form">
+            <div class="form-row">
+              <div class="form-group">
+                <div class="form-label">ITEM</div>
+                <input type="text" class="form-input" id="pantryNewItem" placeholder="e.g. Pasta" onkeydown="if(event.key==='Enter')familyAddPantry()">
+              </div>
+              <div class="form-group" style="flex:0 0 90px;">
+                <div class="form-label">AMOUNT</div>
+                <input type="text" class="form-input" id="pantryNewAmount" placeholder="e.g. 2 cups">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <div class="form-label">USE-BY DATE (optional)</div>
+                <input type="date" class="form-input" id="pantryNewExpiry" style="color:#937662;">
+              </div>
+              <div class="form-group" style="flex:0 0 50px;display:flex;align-items:flex-end;">
+                <button class="add-btn" onclick="familyAddPantry()" style="width:100%;height:40px;">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🥗 Nutrition logs</span>
+          </div>
+          <div id="nutritionDisplay"><p class="empty-state">No nutrition logs yet.</p></div>
+        </div>
+      </div>
+
+      <!-- ── TAB: REMINDERS ── -->
+      <div class="tab-page" id="tab-reminders">
+        <div class="page-title">💊 Reminders</div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Medication schedule</span>
+            <span class="badge badge-red" id="pendingBadge" style="display:none">Pending</span>
+          </div>
+          <div id="medList"><p class="empty-state">No medications scheduled</p></div>
+          <div class="add-form">
+            <div class="form-row">
+              <div class="form-group">
+                <div class="form-label">MEDICATION NAME</div>
+                <input type="text" class="form-input" id="medName" placeholder="e.g. Aspirin">
+              </div>
+              <div class="form-group">
+                <div class="form-label">DOSAGE</div>
+                <input type="text" class="form-input" id="medDosage" placeholder="e.g. 1 tablet">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <div class="form-label">REMINDER TIME</div>
+                <input type="time" class="form-input" id="medTime">
+              </div>
+              <div class="form-group">
+                <div class="form-label">REPEAT</div>
+                <select class="form-input" id="medRepeat">
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="once">Once only</option>
+                </select>
+              </div>
+            </div>
+            <button class="submit-btn" onclick="addMedication()">+ Add Medication Reminder</button>
+          </div>
+        </div>
+
+        <div class="section-divider">Other Reminders</div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">General reminders</span>
+            <span class="badge" id="otherRemindersBadge">0</span>
+          </div>
+          <div id="otherRemindersList"><p class="empty-state">No reminders yet</p></div>
+          <div class="add-form">
+            <div class="form-row">
+              <div class="form-group">
+                <div class="form-label">REMINDER</div>
+                <input type="text" class="form-input" id="reminderTitle" placeholder="e.g. Doctor's appointment">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <div class="form-label">DATE</div>
+                <input type="date" class="form-input" id="reminderDate">
+              </div>
+              <div class="form-group">
+                <div class="form-label">TIME (optional)</div>
+                <input type="time" class="form-input" id="reminderTime">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <div class="form-label">NOTE</div>
+                <input type="text" class="form-input" id="reminderNote" placeholder="Any extra details…">
+              </div>
+            </div>
+            <button class="submit-btn" onclick="addReminder()">+ Add Reminder</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB: MONITOR ── -->
+      <div class="tab-page" id="tab-monitor">
+        <div class="page-title">🏠 Monitor &amp; Notes</div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">⏱ Stove Monitor</span></div>
+          <div class="stove-inner" id="stoveInner">
+            <div class="stove-icon">🍳</div>
+            <div class="stove-label">All clear</div>
+            <div class="stove-sub">No timer running</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">👵 Elder Activity</span></div>
+          <div class="act-row"><span class="act-label">Last opened app</span><span class="act-value" id="actOpened">—</span></div>
+          <div class="act-row"><span class="act-label">Last used stove timer</span><span class="act-value" id="actTimer">—</span></div>
+          <div class="act-row"><span class="act-label">Grocery list last updated</span><span class="act-value" id="actList">—</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">📝 Note to Elder</span></div>
+          <textarea class="notes-ta" id="familyNote" placeholder="Leave a message — elder will see it next time they open the app…"></textarea>
+          <button class="submit-btn" style="margin-top:10px;" onclick="saveNote()">Save note</button>
+        </div>
+      </div>
+
+      <!-- ── TAB: AI INSIGHTS ── -->
+      <div class="tab-page" id="tab-insights">
+        <div class="page-title">✨ AI Insights</div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Meal planning</span>
+            <span class="badge">Gemini</span>
+          </div>
+          <div id="insightsArea" class="insights-stub">Connect Gemini to see meal suggestions based on the grocery list</div>
+          <button class="submit-btn" style="margin-top:10px;" onclick="loadInsights()">✨ Get meal suggestions</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Medication adherence</span>
+            <span class="badge">AI</span>
+          </div>
+          <div class="insights-stub" id="medInsightsArea">Medication adherence patterns will appear here once data is collected</div>
+          <button class="submit-btn" style="margin-top:10px;" onclick="loadMedInsights()">✨ Analyse patterns</button>
+        </div>
+      </div>
+
+      <!-- ── TAB: SETTINGS ── -->
+      <div class="tab-page" id="tab-settings">
+        <div class="page-title">⚙️ Settings</div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Family member</span></div>
+          <div class="config-row">
+            <label>YOUR NAME</label>
+            <input type="text" id="familyName" placeholder="e.g. Sarah">
+          </div>
+          <div class="config-row">
+            <label>ELDER'S WHATSAPP</label>
+            <input type="tel" id="elderPhone" placeholder="+1 415 000 0000">
+          </div>
+          <div class="config-row">
+            <label>ELDER'S NAME</label>
+            <input type="text" id="elderName" placeholder="e.g. Grandma Rose">
+          </div>
+          <div class="config-row">
+            <label>TIMEZONE</label>
+            <select id="timezoneSelect">
+              <option value="America/New_York">Eastern (ET)</option>
+              <option value="America/Chicago">Central (CT)</option>
+              <option value="America/Denver">Mountain (MT)</option>
+              <option value="America/Los_Angeles" selected>Pacific (PT)</option>
+              <option value="Europe/London">London (GMT)</option>
+              <option value="Europe/Paris">Paris (CET)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Notifications</span></div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-label">WhatsApp grocery reminders</div><div class="toggle-desc">Send elder a reminder when list is overdue</div></div>
+            <label class="toggle"><input type="checkbox" id="tog-wa-grocery" checked onchange="saveSetting('wa_grocery',this.checked)"><span class="toggle-track"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-label">Medication alerts</div><div class="toggle-desc">Alert when elder hasn't taken medication on time</div></div>
+            <label class="toggle"><input type="checkbox" id="tog-med-alert" checked onchange="saveSetting('med_alert',this.checked)"><span class="toggle-track"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-label">Stove timer alerts</div><div class="toggle-desc">Notify caregiver when stove timer expires unconfirmed</div></div>
+            <label class="toggle"><input type="checkbox" id="tog-stove-alert" checked onchange="saveSetting('stove_alert',this.checked)"><span class="toggle-track"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-label">App activity alerts</div><div class="toggle-desc">Notify if elder hasn't opened the app today</div></div>
+            <label class="toggle"><input type="checkbox" id="tog-activity" onchange="saveSetting('activity_alert',this.checked)"><span class="toggle-track"></span></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Grocery list</span></div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-label">Show checked-off items</div><div class="toggle-desc">Keep completed items visible in the list</div></div>
+            <label class="toggle"><input type="checkbox" id="tog-show-done" checked onchange="saveSetting('show_done',this.checked)"><span class="toggle-track"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-label">Allow elder to add items</div><div class="toggle-desc">Elder can contribute to the shared grocery list</div></div>
+            <label class="toggle"><input type="checkbox" id="tog-elder-add" checked onchange="saveSetting('elder_add',this.checked)"><span class="toggle-track"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-label">Delivery date tracking</div><div class="toggle-desc">Show delivery date picker when an item is claimed</div></div>
+            <label class="toggle"><input type="checkbox" id="tog-delivery" checked onchange="saveSetting('delivery_dates',this.checked)"><span class="toggle-track"></span></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Privacy &amp; safety</span></div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-label">Stove monitoring</div><div class="toggle-desc">Enable live stove timer tracking from the elder app</div></div>
+            <label class="toggle"><input type="checkbox" id="tog-stove-mon" checked onchange="saveSetting('stove_monitor',this.checked)"><span class="toggle-track"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-label">Activity tracking</div><div class="toggle-desc">Log when elder opens the app and uses features</div></div>
+            <label class="toggle"><input type="checkbox" id="tog-tracking" checked onchange="saveSetting('tracking',this.checked)"><span class="toggle-track"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="toggle-label">Share AI insights with elder</div><div class="toggle-desc">Elder can also see meal plans and suggestions</div></div>
+            <label class="toggle"><input type="checkbox" id="tog-share-ai" onchange="saveSetting('share_ai',this.checked)"><span class="toggle-track"></span></label>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = '';
+  let groceryItems  = [];
+  let medsList      = [];
+  let currentStatus = {};
+  let pantryItems   = [];
+  let otherReminders = JSON.parse(localStorage.getItem('cl_other_reminders') || '[]');
+
+  // ── Tab switching ─────────────────────────────────────────────
+  function switchTab(tabId, triggerEl) {
+    document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.menu-link').forEach(el => el.classList.remove('active'));
+    const page = document.getElementById('tab-' + tabId);
+    if (page) page.classList.add('active');
+    document.querySelectorAll(`[data-tab="${tabId}"]`).forEach(el => el.classList.add('active'));
+  }
+
+  // ── Settings persistence ──────────────────────────────────────
+  function saveSetting(key, val) { localStorage.setItem('cl_setting_' + key, val ? '1' : '0'); }
+  function loadSettings() {
+    const defaults = { wa_grocery:'1', med_alert:'1', stove_alert:'1', activity_alert:'0', show_done:'1', elder_add:'1', delivery_dates:'1', stove_monitor:'1', tracking:'1', share_ai:'0' };
+    Object.entries(defaults).forEach(([key, def]) => {
+      const val = localStorage.getItem('cl_setting_' + key) ?? def;
+      const el  = document.querySelector(`[id="tog-${key.replace(/_/g,'-')}"]`);
+      if (el) el.checked = val === '1';
+    });
+  }
+
+  // ── Persist config ────────────────────────────────────────────
+  const nameEl        = document.getElementById('familyName');
+  const elderNameEl   = document.getElementById('elderName');
+  const phoneEl       = document.getElementById('elderPhone');
+  const phoneRemindEl = document.getElementById('elderPhoneRemind');
+
+  nameEl.value      = localStorage.getItem('cl_family_name') || '';
+  phoneEl.value     = localStorage.getItem('cl_elder_phone') || '';
+  elderNameEl.value = localStorage.getItem('cl_elder_name')  || '';
+  if (phoneRemindEl) phoneRemindEl.value = phoneEl.value;
+
+  nameEl.addEventListener('input',      () => localStorage.setItem('cl_family_name', nameEl.value));
+  elderNameEl.addEventListener('input', () => localStorage.setItem('cl_elder_name',  elderNameEl.value));
+  phoneEl.addEventListener('input', () => {
+    localStorage.setItem('cl_elder_phone', phoneEl.value);
+    if (phoneRemindEl) phoneRemindEl.value = phoneEl.value;
+  });
+
+  loadSettings();
+
+  // ── Poll ──────────────────────────────────────────────────────
+  async function poll() {
+    try {
+      const [items, status, meds, stateRes] = await Promise.all([
+        fetch(`${API}/api/grocery`).then(r => r.json()),
+        fetch(`${API}/api/status`).then(r => r.json()),
+        fetch(`${API}/api/medications`).then(r => r.json()),
+        fetch(`${API}/api/state`).then(r => r.json()),
+      ]);
+      groceryItems = items; currentStatus = status; medsList = meds;
+      pantryItems  = stateRes.pantry || [];
+      renderGrocery(items, status);
+      renderStove(status);
+      renderActivity(status);
+      renderOverdue(status);
+      renderMeds(meds);
+      renderPantry(pantryItems);
+      renderNutrition(stateRes.nutrition_logs || []);
+      document.getElementById('statGroceries').textContent = items.length;
+      document.getElementById('statPantry').textContent    = pantryItems.length;
+      document.getElementById('statMeds').textContent      = meds.length;
+      document.getElementById('lastSync').innerHTML = `<span class="live-dot"></span>Live · ${new Date().toLocaleTimeString()}`;
+    } catch {
+      document.getElementById('lastSync').textContent = '⚠ Cannot reach backend';
+    }
+  }
+  poll(); setInterval(poll, 3000);
+
+  // ── Grocery ───────────────────────────────────────────────────
+  function renderGrocery(items, status) {
+    const el    = document.getElementById('groceryList');
+    const badge = document.getElementById('groceryBadge');
+    const stats = document.getElementById('listStats');
+    badge.textContent = items.length + (items.length === 1 ? ' item' : ' items');
+    if (!items.length) { el.innerHTML = '<p class="empty-state">No items yet</p>'; stats.innerHTML = ''; return; }
+    const claimed   = items.filter(i => i.claimed_by && !i.done).length;
+    const done      = items.filter(i => i.done).length;
+    const unclaimed = items.filter(i => !i.claimed_by && !i.done).length;
+    stats.innerHTML = `
+      <span class="stat-badge sb-gray">${items.length} total</span>
+      ${unclaimed ? `<span class="stat-badge sb-red">${unclaimed} unclaimed</span>` : ''}
+      ${claimed   ? `<span class="stat-badge sb-purple">${claimed} claimed</span>`  : ''}
+      ${done      ? `<span class="stat-badge sb-green">${done} done</span>`         : ''}
+      ${status && status.grocery_last_updated ? `<span class="stat-badge sb-gray">Updated ${timeAgo(status.grocery_last_updated)}</span>` : ''}
+    `;
+    el.innerHTML = items.map(i => {
+      const tagLabel = i.added_by === 'elder' ? 'granny' : i.added_by || 'family';
+      const tagCls   = i.added_by !== 'elder' ? 'caregiver' : '';
+      return `<div class="grocery-item">
+        <input type="checkbox" id="gi-${i.id}" ${i.done?'checked':''} onchange="markGroceryDone('${i.id}')">
+        <label for="gi-${i.id}" ${i.done?'style="text-decoration:line-through;color:#b5b49a"':''}>${esc(i.text)}${i.amount?` <span style="font-size:11px;color:#937662;">· ${esc(i.amount)}</span>`:''}
+        </label>
+        ${i.claimed_by && !i.done ? `<span class="item-who">→ ${esc(i.claimed_by)}</span>` : ''}
+        ${i.delivery_date ? `<span class="item-date">📅 ${esc(i.delivery_date)}</span>` : ''}
+        <span class="item-tag ${tagCls}">${tagLabel}</span>
+        <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
+          ${!i.done && !i.claimed_by ? `<button class="claim-btn" onclick="claimItem('${i.id}')">Claim</button>` : ''}
+          ${i.claimed_by && !i.done  ? `<input type="date" class="delivery-input" value="${i.delivery_date||''}" onchange="setDelivery('${i.id}',this.value)">` : ''}
+          <button class="del-btn" onclick="deleteGrocery('${i.id}')">×</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function addGrocery() {
+    const input = document.getElementById('newGrocery');
+    const text  = input.value.trim(); if (!text) return;
+    const name  = nameEl.value.trim() || 'Caregiver';
+    await fetch(`${API}/api/grocery`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text, added_by: name }) });
+    input.value = ''; poll(); showToast('✓ Added to list');
+  }
+  async function markGroceryDone(id) { await patch(id, { done: true }); }
+  async function claimItem(id) {
+    const name = nameEl.value.trim(); if (!name) { showToast('Enter your name in Settings first!'); return; }
+    await patch(id, { claimed_by: name });
+  }
+  async function setDelivery(id, date) { await patch(id, { delivery_date: date }); }
+  async function deleteGrocery(id) { await fetch(`${API}/api/grocery/${id}`, { method:'DELETE' }); poll(); }
+  async function patch(id, data) {
+    await fetch(`${API}/api/grocery/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) }); poll();
+  }
+  async function saveFrequency() {
+    const days = document.getElementById('reminderFreq').value;
+    await fetch(`${API}/api/grocery/meta`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ reminder_frequency_days: parseInt(days) }) });
+  }
+
+  // ── Overdue ───────────────────────────────────────────────────
+  function renderOverdue(s) {
+    const banner = document.getElementById('overdueBanner');
+    if (s && s.grocery_overdue) {
+      const days = s.grocery_days_since;
+      document.getElementById('overdueSub').textContent = days
+        ? `Last updated ${days} day${days===1?'':'s'} ago — remind elder to update it.`
+        : "Elder hasn't updated the list yet.";
+      banner.style.display = 'block';
+    } else { banner.style.display = 'none'; }
+  }
+  function sendReminder() {
+    const phone = (phoneRemindEl.value || phoneEl.value).replace(/\D/g,'');
+    if (!phone) { showToast("Enter elder's WhatsApp number in Settings."); return; }
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent('Hi! Time to update your grocery list 🛒 Open the app and let me know what you need this week 😊')}`);
+  }
+  function sendUpdateToElder() {
+    const phone = phoneEl.value.replace(/\D/g,'');
+    if (!phone) { showToast("Enter elder's WhatsApp number in Settings."); return; }
+    const claimed = groceryItems.filter(i => i.claimed_by && !i.done);
+    if (!claimed.length) { showToast('No items have been claimed yet.'); return; }
+    const lines = claimed.map(i => `• ${i.text} → ${i.claimed_by}${i.delivery_date?' (by '+i.delivery_date+')':''}`);
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent('🛒 Grocery update!\n\nWe\'re taking care of:\n'+lines.join('\n')+'\n\nSent from CareLink')}`);
+  }
+
+  // ── Pantry ────────────────────────────────────────────────────
+  function expiryPillHtml(expiry_date) {
+    if (!expiry_date) return '';
+    const today = new Date(); today.setHours(0,0,0,0);
+    const exp   = new Date(expiry_date + 'T00:00:00');
+    const days  = Math.round((exp - today) / 86400000);
+    if (days < 0)   return `<span class="expiry-pill expiry-urgent">Expired</span>`;
+    if (days === 0) return `<span class="expiry-pill expiry-urgent">Use today</span>`;
+    if (days === 1) return `<span class="expiry-pill expiry-soon">Tomorrow</span>`;
+    if (days <= 3)  return `<span class="expiry-pill expiry-soon">${days} days</span>`;
+    return `<span class="expiry-pill expiry-ok">${days} days</span>`;
+  }
+
+  function renderPantry(items) {
+    const el    = document.getElementById('pantryItemsList');
+    const badge = document.getElementById('pantryBadge');
+    badge.textContent = items.length + (items.length === 1 ? ' item' : ' items');
+    if (!items.length) { el.innerHTML = '<p class="empty-state">Pantry is empty.</p>'; return; }
+    el.innerHTML = items.map(i => `
+      <div class="pantry-row">
+        <div class="pantry-row-name">
+          ${esc(i.text)}${i.amount ? `<span style="font-size:11px;color:#937662;"> · ${esc(i.amount)}</span>` : ''}
+        </div>
+        ${expiryPillHtml(i.expiry_date)}
+        <input type="date" value="${esc(i.expiry_date||'')}"
+          style="width:110px;font-size:11px;padding:2px 6px;border:1px solid rgba(155,155,122,0.3);border-radius:6px;background:#fffdf5;outline:none;color:#937662;flex-shrink:0;"
+          onchange="updatePantryExpiry('${i.id}', this.value)" title="Use-by date">
+        <button class="del-btn" onclick="deletePantryItem('${i.id}')">×</button>
+      </div>
+    `).join('');
+  }
+
+  function renderNutrition(logs) {
+    const el  = document.getElementById('nutritionDisplay');
+    const recent = logs.slice().reverse().slice(0, 30);
+    if (!recent.length) { el.innerHTML = '<p class="empty-state">No nutrition logs yet.</p>'; return; }
+    el.innerHTML = recent.map(log => {
+      const src  = log.source === 'pantry' ? '📦' : '💬';
+      const time = new Date(log.timestamp).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+      const cals = log.cals ? `${log.cals} kcal${log.prot ? ' · ' + log.prot + 'g protein' : ''}` : '—';
+      return `<div class="act-row"><span class="act-label">${src} ${esc(log.meal)}</span><span class="act-value">${cals}</span></div>
+              <div style="font-size:11px;color:#b5b49a;padding:0 0 8px;">${time}</div>`;
+    }).join('');
+  }
+
+  async function familyAddPantry() {
+    const textEl   = document.getElementById('pantryNewItem');
+    const amountEl = document.getElementById('pantryNewAmount');
+    const expiryEl = document.getElementById('pantryNewExpiry');
+    const text = textEl.value.trim(); if (!text) return;
+    const caregiver = nameEl.value.trim() || 'Caregiver';
+    await fetch(`${API}/api/pantry`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+      text, amount: amountEl.value.trim(), added_by: caregiver, expiry_date: expiryEl.value || null
+    }) });
+    textEl.value = ''; amountEl.value = ''; expiryEl.value = '';
+    showToast(`✓ Added ${text} to pantry`); poll();
+  }
+
+  async function updatePantryExpiry(id, expiry_date) {
+    await fetch(`${API}/api/pantry/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ expiry_date: expiry_date || null }) });
+    poll();
+  }
+
+  async function deletePantryItem(id) {
+    await fetch(`${API}/api/pantry/${id}`, { method:'DELETE' }); poll();
+  }
+
+  // ── Medications ───────────────────────────────────────────────
+  function renderMeds(meds) {
+    const el      = document.getElementById('medList');
+    const badge   = document.getElementById('pendingBadge');
+    const pending = meds.filter(m => m.status === 'pending').length;
+    if (pending) { badge.textContent = pending + ' pending'; badge.style.display = 'block'; }
+    else badge.style.display = 'none';
+    if (!meds.length) { el.innerHTML = '<p class="empty-state">No medications scheduled</p>'; return; }
+    const labels = { taken:'✓ Taken', pending:'Due now!', snoozed:'⏰ Snoozed', upcoming:'Scheduled' };
+    el.innerHTML = meds.map(m => `
+      <div class="med-item">
+        <div class="med-icon">💊</div>
+        <div class="med-info">
+          <div class="med-name">${esc(m.name)}</div>
+          <div class="med-detail">${esc(m.dosage)} · ${esc(m.time)} · ${esc(m.repeat||'daily')}</div>
+        </div>
+        <div class="med-actions">
+          <span class="status-chip ${m.status||'upcoming'}">${labels[m.status]||'Scheduled'}</span>
+          ${m.status !== 'taken' ? `<button class="remind-btn" onclick="remindNow('${m.id}')">Remind</button>` : ''}
+          <button class="med-del-btn" onclick="deleteMed('${m.id}')">×</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function addMedication() {
+    const name   = document.getElementById('medName').value.trim();
+    const dosage = document.getElementById('medDosage').value.trim();
+    const time   = document.getElementById('medTime').value;
+    const repeat = document.getElementById('medRepeat').value;
+    if (!name || !dosage || !time) { showToast('Please fill in all fields'); return; }
+    await fetch(`${API}/api/medications`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, dosage, time, repeat }) });
+    document.getElementById('medName').value = '';
+    document.getElementById('medDosage').value = '';
+    document.getElementById('medTime').value = '';
+    showToast(`💊 Reminder added for ${name}`); poll();
+  }
+  async function deleteMed(id) { await fetch(`${API}/api/medications/${id}`, { method:'DELETE' }); poll(); }
+  async function remindNow(medId) {
+    await fetch(`${API}/api/medications/remind`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ med_id: medId }) });
+    showToast('📲 Reminder sent!'); poll();
+  }
+
+  // ── Other Reminders ───────────────────────────────────────────
+  function renderOtherReminders() {
+    const el    = document.getElementById('otherRemindersList');
+    const badge = document.getElementById('otherRemindersBadge');
+    badge.textContent = otherReminders.length;
+    if (!otherReminders.length) { el.innerHTML = '<p class="empty-state">No reminders yet</p>'; return; }
+    const today = new Date().toISOString().slice(0,10);
+    el.innerHTML = otherReminders.map((r,i) => {
+      const isPast = r.date && r.date < today;
+      return `<div class="reminder-item" style="${isPast?'opacity:0.5':''}">
+        <div class="reminder-icon">📅</div>
+        <div class="reminder-info">
+          <div class="reminder-title">${esc(r.title)}</div>
+          <div class="reminder-detail">${r.date||''}${r.time?' at '+r.time:''}${r.note?' · '+esc(r.note):''}</div>
+        </div>
+        <button class="med-del-btn" onclick="deleteReminder(${i})">×</button>
+      </div>`;
+    }).join('');
+  }
+  function addReminder() {
+    const title = document.getElementById('reminderTitle').value.trim();
+    const date  = document.getElementById('reminderDate').value;
+    const time  = document.getElementById('reminderTime').value;
+    const note  = document.getElementById('reminderNote').value.trim();
+    if (!title) { showToast('Enter a reminder title'); return; }
+    otherReminders.push({ title, date, time, note, id: Date.now() });
+    otherReminders.sort((a,b) => (a.date||'9') > (b.date||'9') ? 1 : -1);
+    localStorage.setItem('cl_other_reminders', JSON.stringify(otherReminders));
+    document.getElementById('reminderTitle').value = '';
+    document.getElementById('reminderDate').value  = '';
+    document.getElementById('reminderTime').value  = '';
+    document.getElementById('reminderNote').value  = '';
+    renderOtherReminders(); showToast('📅 Reminder added');
+  }
+  function deleteReminder(i) {
+    otherReminders.splice(i, 1);
+    localStorage.setItem('cl_other_reminders', JSON.stringify(otherReminders));
+    renderOtherReminders();
+  }
+
+  // ── Stove ─────────────────────────────────────────────────────
+  function renderStove(s) {
+    const el = document.getElementById('stoveInner');
+    if (!s.timer_active && !s.timer_expired) {
+      el.innerHTML = `<div class="stove-icon">🍳</div><div class="stove-label">All clear</div><div class="stove-sub">No timer running</div>`;
+    } else if (s.timer_active && !s.timer_expired) {
+      const m   = Math.floor(s.timer_remaining/60).toString().padStart(2,'0');
+      const sec = (s.timer_remaining%60).toString().padStart(2,'0');
+      el.innerHTML = `<div class="stove-icon pulse">🔥</div><div class="stove-label">Cooking: ${esc(s.timer_dish)}</div><div class="countdown ${s.timer_remaining<60?'urgent':''}">${m}:${sec}</div><div class="stove-sub">Timer running</div>`;
+    } else if (s.timer_expired && !s.timer_dismissed) {
+      el.innerHTML = `<div class="stove-icon pulse">⚠️</div><div class="stove-label" style="color:var(--accent)">Timer expired!</div><div class="stove-sub">Elder hasn't confirmed stove is off</div><button class="wa-alert-btn" onclick="sendStoveAlert()">📲 Alert elder on WhatsApp</button>`;
+    } else {
+      el.innerHTML = `<div class="stove-icon">✅</div><div class="stove-label">All done</div><div class="stove-sub">Elder confirmed stove is off</div>`;
+    }
+  }
+  function sendStoveAlert() {
+    const phone = phoneEl.value.replace(/\D/g,'');
+    if (!phone) { showToast("Enter elder's WhatsApp number in Settings."); return; }
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent('⚠️ Hi! Your cooking timer went off — is the stove off? 🍳')}`);
+  }
+
+  // ── Activity ──────────────────────────────────────────────────
+  function renderActivity(s) {
+    document.getElementById('actOpened').textContent = s.elder_last_opened ? timeAgo(s.elder_last_opened) : '—';
+    document.getElementById('actTimer').textContent  = s.elder_last_timer  ? timeAgo(s.elder_last_timer)  : '—';
+    document.getElementById('actList').textContent   = s.grocery_last_updated ? timeAgo(s.grocery_last_updated) : '—';
+  }
+
+  // ── Notes ─────────────────────────────────────────────────────
+  async function loadNote() {
+    try { const r = await fetch(`${API}/api/notes`).then(r => r.json()); document.getElementById('familyNote').value = r.notes || ''; } catch {}
+  }
+  async function saveNote() {
+    const notes = document.getElementById('familyNote').value;
+    await fetch(`${API}/api/notes`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ notes }) });
+    showToast('Note saved — elder will see it next time they open the app.');
+  }
+
+  // ── Insights ──────────────────────────────────────────────────
+  async function loadInsights() {
+    const area = document.getElementById('insightsArea');
+    area.className = 'insights-stub'; area.textContent = 'Loading…';
+    try {
+      const res = await fetch(`${API}/api/insights`).then(r => r.json());
+      if (res.meal_plan) {
+        area.className = ''; area.style.cssText = 'font-size:13px;line-height:1.6;color:#5a5c4a';
+        area.innerHTML = `<strong>Meal plan:</strong><br>${esc(res.meal_plan)}`
+          + (Array.isArray(res.suggestions) && res.suggestions.length
+            ? '<br><br><strong>Suggestions:</strong><br>' + res.suggestions.map(s => `<span class="insight-chip">${esc(s)}</span>`).join('')
+            : '');
+      } else { area.textContent = res.note || 'Add GEMINI_API_KEY to .env to enable insights.'; }
+    } catch { area.textContent = 'Could not reach backend.'; }
+  }
+  async function loadMedInsights() {
+    const area = document.getElementById('medInsightsArea');
+    area.textContent = 'Analysing…';
+    setTimeout(() => { area.textContent = 'Connect Gemini API to enable medication adherence analysis.'; }, 1500);
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────
+  function timeAgo(iso) {
+    if (!iso) return '—';
+    const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (diff < 60)    return 'just now';
+    if (diff < 3600)  return Math.floor(diff/60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+    return Math.floor(diff/86400) + 'd ago';
+  }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // ── Init ──────────────────────────────────────────────────────
+  renderOtherReminders();
+  loadNote();
+</script>
+</body>
+</html>

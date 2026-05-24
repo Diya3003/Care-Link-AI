@@ -1,0 +1,701 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>My Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Inter', sans-serif; background: #f4e3b8; min-height: 100vh; padding-bottom: 100px; }
+
+    /* ── Header ── */
+    .header { background: #6f725a; padding: 32px 20px 22px; text-align: center; }
+    .header h1 { font-family: 'Lora', serif; font-size: 48px; font-weight: 600; color: #f4e3b8; margin-bottom: 2px; }
+    .header p  { font-size: 14px; color: rgba(244,227,184,0.75); font-weight: 300; }
+
+    /* ── Content ── */
+    .content { padding: 20px 18px; }
+
+    /* ── Cards ── */
+    .card { background: #fffdf5; border-radius: 20px; padding: 22px 18px; box-shadow: 0 4px 24px rgba(111,114,90,0.12); border: 1px solid rgba(155,155,122,0.2); margin-bottom: 18px; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid rgba(155,155,122,0.25); }
+    .card-title { font-family: 'Lora', serif; font-size: 17px; font-weight: 500; color: #6f725a; }
+    .badge { background: #ffd485; color: #6f725a; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+
+    /* ── Tabs ── */
+    .tab-bar { display: flex; margin: -22px -18px 18px; border-bottom: 1.5px solid rgba(155,155,122,0.25); }
+    .tab { flex: 1; text-align: center; padding: 14px 8px; font-size: 15px; font-family: 'Lora', serif; color: #9b9b7a; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; transition: all 0.2s; }
+    .tab.active { color: #6f725a; border-bottom-color: #d08c60; font-weight: 600; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Family notes banner ── */
+    .notes-banner { display: none; background: #d08c60; color: #fffdf5; border-radius: 16px; padding: 14px 18px; margin-bottom: 18px; }
+    .notes-label  { font-size: 11px; font-weight: 600; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .notes-text   { font-size: 15px; font-family: 'Lora', serif; }
+
+    /* ── Expiry pill ── */
+    .expiry-pill { font-size: 11px; padding: 2px 8px; border-radius: 8px; flex-shrink: 0; font-weight: 500; }
+    .expiry-ok     { background: rgba(111,114,90,0.1); color: #6f725a; }
+    .expiry-soon   { background: rgba(208,140,96,0.18); color: #b87a51; }
+    .expiry-urgent { background: rgba(192,57,43,0.12); color: #c0392b; }
+
+    /* ── Med alert banner ── */
+    .med-banner { display: none; background: #d08c60; color: #fffdf5; border-radius: 16px; padding: 16px 18px; margin-bottom: 18px; cursor: pointer; animation: mpulse 2s infinite; }
+    .med-banner.visible { display: flex; align-items: center; gap: 14px; }
+    .med-banner-icon { font-size: 26px; flex-shrink: 0; }
+    .med-banner-text strong { display: block; font-size: 16px; font-weight: 500; font-family: 'Lora', serif; margin-bottom: 2px; }
+    .med-banner-text span   { font-size: 13px; opacity: 0.9; }
+    @keyframes mpulse { 0%,100%{box-shadow:0 4px 16px rgba(208,140,96,0.35)} 50%{box-shadow:0 4px 28px rgba(208,140,96,0.6)} }
+
+    /* ── Grocery checklist ── */
+    .checklist-items { display: flex; flex-direction: column; gap: 10px; }
+    .checklist-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: #fdf8ed; border-radius: 12px; border: 1px solid rgba(155,155,122,0.18); transition: all 0.2s; }
+    .checklist-item:hover { background: #fdf4e0; }
+    .checklist-item input[type="checkbox"] {
+      appearance: none; -webkit-appearance: none; width: 24px; height: 24px;
+      border: 2px solid #9b9b7a; border-radius: 6px; cursor: pointer; flex-shrink: 0;
+      background: white; transition: all 0.2s; position: relative;
+    }
+    .checklist-item input[type="checkbox"]:checked { background: #d08c60; border-color: #d08c60; }
+    .checklist-item input[type="checkbox"]:checked::after {
+      content: ''; position: absolute; left: 6px; top: 2px; width: 7px; height: 11px;
+      border: 2px solid white; border-top: none; border-left: none; transform: rotate(45deg);
+    }
+    .checklist-item label { cursor: pointer; flex: 1; font-size: 17px; color: #5a5c4a; transition: all 0.2s; }
+    .checklist-item input[type="checkbox"]:checked + label { color: #b5b49a; text-decoration: line-through; }
+    .item-from  { font-size: 11px; background: rgba(208,140,96,0.15); color: #d08c60; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
+    .del-item   { background: none; border: none; color: #c9b9a8; font-size: 20px; cursor: pointer; padding: 0 4px; flex-shrink: 0; }
+    .del-item:hover { color: #d08c60; }
+
+    /* ── Add item ── */
+    .add-item-section { display: flex; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(155,155,122,0.25); }
+    .add-item-input { flex: 1; padding: 13px 16px; border: 1.5px solid rgba(155,155,122,0.35); border-radius: 12px; font-size: 16px; font-family: 'Inter', sans-serif; color: #5a5c4a; background: #fdf8ed; transition: all 0.2s; }
+    .add-item-input::placeholder { color: #b5b49a; }
+    .add-item-input:focus { outline: none; border-color: #d08c60; background: white; }
+    .add-btn { width: 50px; height: 50px; background: #d08c60; color: white; border: none; border-radius: 12px; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+    .add-btn:active { background: #b87a51; transform: scale(0.96); }
+
+    /* ── Voice button ── */
+    .voice-btn { width: 100%; padding: 16px; background: #6f725a; color: #f4e3b8; border: none; border-radius: 16px; font-size: 18px; font-family: 'Lora', serif; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 14px; transition: all 0.2s; }
+    .voice-btn:active { background: #5a5c4a; transform: scale(0.98); }
+    .voice-btn.listening { background: #c0392b; animation: vblink 1s infinite; }
+    @keyframes vblink { 0%,100%{opacity:1} 50%{opacity:0.8} }
+    .voice-hint { font-size: 13px; color: #937662; text-align: center; margin-bottom: 14px; }
+
+    /* ── WhatsApp button ── */
+    .wa-btn { width: 100%; padding: 14px; background: #25d366; color: #fff; border: none; border-radius: 14px; font-size: 16px; font-family: 'Lora', serif; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 14px; transition: all 0.2s; }
+    .wa-btn:active { background: #1da851; }
+    .phone-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+    .phone-row label { font-size: 13px; color: #937662; white-space: nowrap; }
+    .phone-row input { flex: 1; padding: 10px 14px; border: 1.5px solid rgba(155,155,122,0.35); border-radius: 10px; font-size: 14px; background: #fdf8ed; color: #5a5c4a; outline: none; }
+
+    /* ── Med status ── */
+    .med-status-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #fdf8ed; border-radius: 12px; border: 1px solid rgba(155,155,122,0.18); margin-bottom: 8px; }
+    .med-status-info { flex: 1; }
+    .med-status-name { font-size: 15px; color: #5a5c4a; font-weight: 500; }
+    .med-status-time { font-size: 12px; color: #937662; margin-top: 1px; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot.taken    { background: #9b9b7a; }
+    .status-dot.pending  { background: #d08c60; animation: mpulse 1.5s infinite; }
+    .status-dot.snoozed  { background: #ffd485; }
+    .status-dot.upcoming { background: rgba(155,155,122,0.3); }
+    .no-meds { font-size: 14px; color: #b5b49a; text-align: center; padding: 12px 0; font-style: italic; }
+
+    /* ── Stove timer section ── */
+    .section-title { font-family: 'Lora', serif; font-size: 18px; font-weight: 600; color: #6f725a; margin-bottom: 14px; }
+    .duration-row { display: flex; align-items: center; gap: 12px; background: #fffdf5; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(155,155,122,0.2); }
+    .duration-row label { font-size: 16px; color: #5a5c4a; flex: 1; }
+    .duration-row input[type="number"] { width: 75px; padding: 8px; border: 1.5px solid rgba(155,155,122,0.35); border-radius: 10px; font-size: 18px; text-align: center; outline: none; font-weight: 600; color: #5a5c4a; background: #fdf8ed; }
+    .cook-start-btn { width: 100%; padding: 16px; background: #d08c60; color: #fffdf5; border: none; border-radius: 16px; font-size: 18px; font-family: 'Lora', serif; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .cook-start-btn:active { background: #b87a51; }
+
+    /* ── Dish autocomplete ── */
+    .dish-input-wrap { margin-bottom: 14px; }
+    .dish-input { width: 100%; padding: 14px 16px; border: 1.5px solid rgba(155,155,122,0.35); border-radius: 12px; font-size: 16px; font-family: 'Inter', sans-serif; color: #5a5c4a; background: #fdf8ed; outline: none; transition: all 0.2s; }
+    .dish-input:focus { border-color: #d08c60; background: white; }
+    .dish-input::placeholder { color: #b5b49a; }
+
+    /* ── Timer banners ── */
+    .timer-banner { display: flex; align-items: center; gap: 12px; background: #fffdf5; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; border: 1px solid rgba(155,155,122,0.2); box-shadow: 0 2px 8px rgba(111,114,90,0.08); }
+    .timer-banner.done { border-color: #d08c60; background: #fdf0e4; }
+    .timer-banner-dish { flex: 1; font-size: 15px; font-weight: 500; color: #5a5c4a; font-family: 'Lora', serif; }
+    .timer-banner-time { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; color: #6f725a; font-family: 'Lora', serif; min-width: 72px; text-align: center; }
+    .timer-banner-time.urgent { color: #d08c60; }
+    .timer-dismiss-btn { padding: 8px 14px; background: none; border: 1.5px solid rgba(155,155,122,0.45); border-radius: 10px; font-size: 13px; color: #6f725a; cursor: pointer; flex-shrink: 0; transition: all 0.2s; white-space: nowrap; }
+    .timer-banner.done .timer-dismiss-btn { background: #d08c60; border-color: #d08c60; color: white; font-weight: 500; }
+
+    /* ── Med modal ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(111,114,90,0.55); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.visible { display: flex; }
+    .modal { background: #fffdf5; border-radius: 28px; padding: 36px 28px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 20px 60px rgba(111,114,90,0.25); animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .modal-emoji  { font-size: 52px; margin-bottom: 14px; }
+    .modal-title  { font-family: 'Lora', serif; font-size: 20px; color: #6f725a; font-weight: 600; margin-bottom: 6px; }
+    .modal-name   { font-size: 24px; font-family: 'Lora', serif; font-weight: 600; color: #d08c60; margin-bottom: 8px; }
+    .modal-dosage { font-size: 14px; color: #937662; margin-bottom: 26px; background: #f4e3b8; padding: 7px 14px; border-radius: 10px; display: inline-block; }
+    .modal-buttons { display: flex; flex-direction: column; gap: 12px; }
+    .btn-taken  { padding: 15px; background: #d08c60; color: white; border: none; border-radius: 14px; font-size: 17px; font-family: 'Lora', serif; font-weight: 500; cursor: pointer; }
+    .btn-snooze { padding: 15px; background: #f4e3b8; color: #6f725a; border: 2px solid rgba(155,155,122,0.3); border-radius: 14px; font-size: 15px; font-family: 'Inter', sans-serif; cursor: pointer; }
+
+    /* ── Fixed chat button ── */
+    .chat-button { position: fixed; bottom: 22px; left: 18px; right: 18px; height: 58px; background: #6f725a; color: #f4e3b8; border: none; border-radius: 16px; font-size: 17px; font-family: 'Lora', serif; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; z-index: 100; box-shadow: 0 6px 24px rgba(111,114,90,0.3); transition: all 0.2s; }
+    .chat-button:hover { background: #5a5c4a; }
+
+    .empty-msg { text-align: center; color: #b5b49a; font-size: 15px; padding: 16px 0; font-style: italic; }
+
+    /* ── Toast ── */
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px); background: #6f725a; color: #f4e3b8; padding: 11px 22px; border-radius: 12px; font-size: 14px; font-family: 'Lora', serif; opacity: 0; transition: all 0.3s; z-index: 999; white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <h1 id="greeting-emoji">👋</h1>
+  <p id="greeting-text">Good day!</p>
+</header>
+
+<div class="content">
+
+  <!-- Family notes banner -->
+  <div class="notes-banner" id="notes-banner">
+    <div class="notes-label">💌 Message from your family</div>
+    <div class="notes-text" id="notes-text"></div>
+  </div>
+
+  <!-- Medication alert banner -->
+  <div class="med-banner" id="medBanner" onclick="openMedModal()">
+    <div class="med-banner-icon">💊</div>
+    <div class="med-banner-text">
+      <strong id="bannerMedName">Time for your medication</strong>
+      <span id="bannerMedDose"></span>
+    </div>
+    <div style="font-size:20px;opacity:0.8">›</div>
+  </div>
+
+  <!-- Tabbed card: Shopping list + Pantry -->
+  <div class="card">
+    <div class="tab-bar">
+      <div class="tab active" id="tab-grocery" onclick="switchTab('grocery')">🧺 Shopping list <span id="groceryTabBadge"></span></div>
+      <div class="tab" id="tab-pantry" onclick="switchTab('pantry')">📦 Pantry <span id="pantryTabBadge"></span></div>
+    </div>
+
+    <!-- Shopping list panel -->
+    <div class="tab-panel active" id="panel-grocery">
+      <button class="voice-btn" id="micBtn" onclick="toggleVoice()">
+        <span>🎤</span><span id="micLabel">Tap to speak</span>
+      </button>
+      <p class="voice-hint">Say "add milk" · "remove eggs" · or ask a question</p>
+
+      <div id="groceryItems" class="checklist-items">
+        <p class="empty-msg">Your list is empty — add something!</p>
+      </div>
+
+      <div class="add-item-section" style="flex-wrap:wrap;">
+        <input type="text" class="add-item-input" id="addInput" placeholder="Item name…" onkeydown="if(event.key==='Enter')runCmd()" style="flex:2;min-width:0;">
+        <input type="text" class="add-item-input" id="addAmount" placeholder="Amount (optional)" onkeydown="if(event.key==='Enter')runCmd()" style="flex:1;min-width:80px;font-size:14px;">
+        <button class="add-btn" onclick="runCmd()">+</button>
+      </div>
+
+      <div class="phone-row">
+        <label>Family's number:</label>
+        <input type="tel" id="familyPhone" placeholder="+1 415 000 0000">
+      </div>
+      <button class="wa-btn" onclick="sendToFamily()">📲 Send list to family on WhatsApp</button>
+    </div>
+
+    <!-- Pantry panel -->
+    <div class="tab-panel" id="panel-pantry">
+      <div id="pantryItems" class="checklist-items">
+        <p class="empty-msg">Your pantry is empty.</p>
+      </div>
+      <div class="add-item-section" style="flex-wrap:wrap;">
+        <input type="text" class="add-item-input" id="pantryAddInput" placeholder="Add pantry item…" onkeydown="if(event.key==='Enter')addToPantry()" style="flex:2;min-width:120px;">
+        <input type="text" class="add-item-input" id="pantryAddAmount" placeholder="Amount" onkeydown="if(event.key==='Enter')addToPantry()" style="flex:0 0 80px;font-size:14px;">
+        <input type="date" class="add-item-input" id="pantryAddExpiry" style="flex:0 0 130px;font-size:13px;color:#937662;" title="Use by date (optional)">
+        <button class="add-btn" onclick="addToPantry()">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Medication status -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">💊 My medications</span>
+    </div>
+    <div id="medStatusList"><p class="no-meds">No medications scheduled</p></div>
+  </div>
+
+  <!-- Stove timers -->
+  <div class="section-title">⏱ Stove timers</div>
+
+  <!-- Timers panel (banners) -->
+  <div id="timersPanel"></div>
+
+  <div id="pickDish">
+    <div class="dish-input-wrap">
+      <input type="text" class="dish-input" id="dishInput" list="dishSuggestions"
+        placeholder="What are you cooking? (e.g. Pasta, Soup…)"
+        oninput="onDishInput(this.value)"
+        onchange="onDishInput(this.value)">
+      <datalist id="dishSuggestions"></datalist>
+    </div>
+    <div class="duration-row">
+      <label>Minutes to cook:</label>
+      <input type="number" id="cookMins" value="20" min="1" max="180">
+    </div>
+    <button class="cook-start-btn" onclick="addTimer()">🔥 Add timer</button>
+  </div>
+
+</div>
+
+<!-- Fixed chat button -->
+<button class="chat-button" onclick="openChatbot()">💬 Chat with Kitchen Helper</button>
+
+<!-- Med modal -->
+<div class="modal-overlay" id="medModal">
+  <div class="modal">
+    <div class="modal-emoji">💊</div>
+    <div class="modal-title">Time for your</div>
+    <div class="modal-name" id="modalMedName">Medication</div>
+    <div class="modal-dosage" id="modalDosage">1 tablet</div>
+    <div class="modal-buttons">
+      <button class="btn-taken" onclick="markTaken()">✓ &nbsp;I took it</button>
+      <button class="btn-snooze" onclick="snoozeMed()">⏰ &nbsp;Remind me in 30 minutes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = '';
+  let items = [];
+  let meds  = [];
+  let pantry = [];
+  let activeTimers = [];
+  let pendingMedId = null;
+
+  // ── Dish cooking time database ────────────────────────────────
+  const DISH_DB = {
+    'Pasta': 20, 'Spaghetti': 20, 'Penne': 18, 'Fettuccine': 12, 'Linguine': 12,
+    'Soup': 30, 'Chicken soup': 45, 'Tomato soup': 20, 'Lentil soup': 40, 'Vegetable soup': 25,
+    'Minestrone': 35, 'Miso soup': 10, 'French onion soup': 50,
+    'Eggs': 8, 'Scrambled eggs': 5, 'Fried eggs': 4, 'Hard boiled eggs': 12,
+    'Soft boiled eggs': 7, 'Poached eggs': 5, 'Omelette': 6,
+    'Rice': 20, 'White rice': 20, 'Brown rice': 45, 'Basmati rice': 18,
+    'Jasmine rice': 18, 'Fried rice': 12,
+    'Tea': 5, 'Green tea': 3, 'Coffee': 5,
+    'Chicken': 35, 'Grilled chicken': 30, 'Roast chicken': 90, 'Chicken breast': 25,
+    'Chicken thighs': 40, 'Baked chicken': 45,
+    'Fish': 15, 'Salmon': 15, 'Tilapia': 12, 'Cod': 15, 'Tuna steak': 8,
+    'Shrimp': 6, 'Prawns': 6,
+    'Steak': 12, 'Beef': 45, 'Ground beef': 15, 'Meatballs': 25,
+    'Pork chops': 20, 'Lamb chops': 15,
+    'Broccoli': 8, 'Carrots': 15, 'Potatoes': 25, 'Sweet potatoes': 30,
+    'Corn': 15, 'Peas': 5, 'Spinach': 5, 'Green beans': 10, 'Zucchini': 8,
+    'Asparagus': 10, 'Cauliflower': 12, 'Beets': 45,
+    'Oatmeal': 5, 'Porridge': 10, 'Pancakes': 15, 'Waffles': 8,
+    'French toast': 10, 'Toast': 3,
+    'Beans': 60, 'Black beans': 60, 'Chickpeas': 50, 'Lentils': 35,
+    'Dal': 40, 'Daal': 40, 'Curry': 35, 'Chicken curry': 40, 'Vegetable curry': 30,
+    'Roti': 2, 'Chapati': 3, 'Naan': 5, 'Paratha': 5,
+    'Quinoa': 15, 'Couscous': 10, 'Barley': 45,
+    'Grilled cheese': 8, 'Quesadilla': 8, 'Sandwich': 5,
+    'Pizza': 15, 'Baked potato': 60, 'Mac and cheese': 20,
+  };
+
+  // Populate datalist
+  const dl = document.getElementById('dishSuggestions');
+  Object.keys(DISH_DB).forEach(dish => {
+    const opt = document.createElement('option');
+    opt.value = dish;
+    dl.appendChild(opt);
+  });
+
+  function onDishInput(val) {
+    const mins = DISH_DB[val.trim()];
+    if (mins) document.getElementById('cookMins').value = mins;
+  }
+
+  // ── Greeting ──────────────────────────────────────────────────
+  const hour = new Date().getHours();
+  document.getElementById('greeting-emoji').textContent = hour < 12 ? '🌅' : hour < 18 ? '☀️' : '🌙';
+  document.getElementById('greeting-text').textContent  = hour < 12 ? 'Good morning!' : hour < 18 ? 'Good afternoon!' : 'Good evening!';
+
+  // ── Persist phone ─────────────────────────────────────────────
+  const phoneEl = document.getElementById('familyPhone');
+  phoneEl.value = localStorage.getItem('cl_family_phone') || '';
+  phoneEl.addEventListener('input', () => localStorage.setItem('cl_family_phone', phoneEl.value));
+
+  // ── Tabs ──────────────────────────────────────────────────────
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  // ── Init ──────────────────────────────────────────────────────
+  fetch(`${API}/api/elder/ping`, { method: 'POST' }).catch(() => {});
+  loadItems(); loadNotes(); syncTimer(); checkMeds(); loadPantry();
+  setInterval(loadItems, 5000);
+  setInterval(loadNotes, 10000);
+  setInterval(checkMeds, 30000);
+  setInterval(loadPantry, 4000);
+
+  // ── Grocery list ──────────────────────────────────────────────
+  async function loadItems() {
+    try { items = await fetch(`${API}/api/grocery`).then(r => r.json()); renderItems(); } catch {}
+  }
+
+  function renderItems() {
+    const el    = document.getElementById('groceryItems');
+    const badge = document.getElementById('groceryTabBadge');
+    const active = items.filter(i => !i.done);
+    badge.textContent = active.length ? `(${active.length})` : '';
+    if (!active.length) { el.innerHTML = '<p class="empty-msg">Your list is empty — add something!</p>'; return; }
+    el.innerHTML = active.map(i => `
+      <div class="checklist-item">
+        <input type="checkbox" id="ci-${i.id}" onchange="markItemDone('${i.id}')">
+        <label for="ci-${i.id}">${esc(i.text)}${i.amount ? ` <span style="font-size:13px;color:#937662;">· ${esc(i.amount)}</span>` : ''}</label>
+        ${i.claimed_by ? `<span class="item-from">← ${esc(i.claimed_by)}</span>` : ''}
+        <button class="del-item" onclick="removeItemById('${i.id}')">×</button>
+      </div>
+    `).join('');
+  }
+
+  async function addItemByName(name, amount) {
+    const text = name.charAt(0).toUpperCase() + name.slice(1);
+    await fetch(`${API}/api/grocery`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text, amount: amount || '', added_by: 'elder' }) });
+    loadItems(); showToast(`✓ Added: ${text}`);
+  }
+
+  async function removeItemByName(name) {
+    const match = items.find(i => !i.done && i.text.toLowerCase().includes(name.toLowerCase()));
+    if (match) { await fetch(`${API}/api/grocery/${match.id}`, { method:'DELETE' }); loadItems(); showToast(`Removed: ${match.text}`); }
+    else showToast(`Couldn't find "${name}" on the list`);
+  }
+
+  async function removeItemById(id) { await fetch(`${API}/api/grocery/${id}`, { method:'DELETE' }); loadItems(); }
+
+  async function markItemDone(id) {
+    await fetch(`${API}/api/grocery/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ done: true }) });
+    loadItems();
+  }
+
+  // ── Voice + text command parsing ──────────────────────────────
+  function parseCmd(text) {
+    text = text.trim().toLowerCase();
+    const addRx    = /^(?:add|i need|get|put)\s+(.+)$/;
+    const removeRx = /^(?:remove|delete|take off|cross off|i got|got)\s+(.+)$/;
+    let m;
+    if ((m = text.match(addRx)))    return { action: 'add',    item: m[1].trim() };
+    if ((m = text.match(removeRx))) return { action: 'remove', item: m[1].trim() };
+    return { action: 'chat', item: text };
+  }
+
+  function executeCmd(text, amount) {
+    const cmd = parseCmd(text);
+    if (cmd.action === 'add')         addItemByName(cmd.item, amount);
+    else if (cmd.action === 'remove') removeItemByName(cmd.item);
+    else openChatbot(text);
+  }
+
+  function runCmd() {
+    const el = document.getElementById('addInput');
+    const amountEl = document.getElementById('addAmount');
+    const text = el.value.trim();
+    if (!text) return;
+    const amount = amountEl ? amountEl.value.trim() : '';
+    addItemByName(text, amount);
+    el.value = '';
+    if (amountEl) amountEl.value = '';
+  }
+
+  let recognition = null, isListening = false;
+  function toggleVoice() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert('Voice input works in Chrome. Try typing instead!'); return; }
+    if (isListening) { recognition.stop(); return; }
+    recognition = new SR();
+    recognition.lang = 'en-US'; recognition.interimResults = false; recognition.continuous = false;
+    recognition.onstart = () => { isListening = true; document.getElementById('micBtn').classList.add('listening'); document.getElementById('micLabel').textContent = '🔴 Listening…'; };
+    recognition.onresult = e => { executeCmd(e.results[0][0].transcript); };
+    recognition.onend   = () => { isListening = false; document.getElementById('micBtn').classList.remove('listening'); document.getElementById('micLabel').textContent = 'Tap to speak'; };
+    recognition.start();
+  }
+
+  // ── WhatsApp ──────────────────────────────────────────────────
+  function sendToFamily() {
+    const active = items.filter(i => !i.done);
+    if (!active.length) { showToast('Your list is empty!'); return; }
+    let phone = phoneEl.value.replace(/\D/g, '');
+    if (!phone) { phone = prompt('Enter family WhatsApp number (e.g. 14155551234):'); }
+    if (!phone) return;
+    const msg = `🛒 My grocery list:\n\n${active.map(i => '• ' + i.text).join('\n')}\n\n— Grandma`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`);
+  }
+
+  // ── Stove timers (multiple) ───────────────────────────────────
+  function fmtTime(s) {
+    return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
+  }
+
+  function playAlarm() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 0.45, 0.9].forEach(delay => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine'; osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.6, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.4);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + 0.4);
+      });
+    } catch(e) {}
+  }
+
+  function renderTimers() {
+    const panel = document.getElementById('timersPanel');
+    if (!activeTimers.length) { panel.innerHTML = ''; return; }
+    panel.innerHTML = activeTimers.map(t => `
+      <div class="timer-banner${t.done ? ' done' : ''}" id="tc-${t.id}">
+        <div class="timer-banner-dish">${esc(t.dish)}</div>
+        <div class="timer-banner-time${t.remaining <= 60 && !t.done ? ' urgent' : ''}" id="td-${t.id}">
+          ${t.done ? '✅ Done!' : fmtTime(t.remaining)}
+        </div>
+        <button class="timer-dismiss-btn" onclick="dismissSingleTimer(${t.id})">
+          ${t.done ? '✅ All done!' : '✕ Cancel'}
+        </button>
+      </div>
+    `).join('');
+  }
+
+  function startCountdown(timer) {
+    timer.intervalId = setInterval(() => {
+      timer.remaining = Math.max(0, timer.remaining - 1);
+      if (timer.remaining === 0) {
+        clearInterval(timer.intervalId); timer.intervalId = null; timer.done = true;
+        playAlarm(); renderTimers();
+        setTimeout(loadCooked, 2000);
+      } else {
+        const d = document.getElementById(`td-${timer.id}`);
+        if (d) { d.textContent = fmtTime(timer.remaining); d.className = 'timer-banner-time' + (timer.remaining <= 60 ? ' urgent' : ''); }
+      }
+    }, 1000);
+  }
+
+  async function addTimer() {
+    const dishInput = document.getElementById('dishInput');
+    const dish = dishInput.value.trim() || 'Food';
+    const mins = parseInt(document.getElementById('cookMins').value) || 20;
+    const id = Date.now();
+    const timer = { id, dish, totalSecs: mins * 60, remaining: mins * 60, intervalId: null, done: false };
+    activeTimers.push(timer);
+    startCountdown(timer);
+    renderTimers();
+    dishInput.value = '';
+    document.getElementById('cookMins').value = 20;
+    fetch(`${API}/api/timer/start`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ dish, duration_minutes: mins }) }).catch(() => {});
+    showToast(`⏱ Timer started: ${dish} (${mins} min)`);
+  }
+
+  async function dismissSingleTimer(id) {
+    const t = activeTimers.find(t => t.id === id);
+    if (t) { clearInterval(t.intervalId); }
+    activeTimers = activeTimers.filter(t => t.id !== id);
+    renderTimers();
+    await fetch(`${API}/api/timer/dismiss`, { method:'POST' }).catch(() => {});
+    showToast('Timer dismissed.');
+  }
+
+  async function syncTimer() {
+    try {
+      const s = await fetch(`${API}/api/status`).then(r => r.json());
+      if (s.timer_active && !s.timer_expired && s.timer_remaining > 0) {
+        const id = Date.now();
+        const timer = { id, dish: s.timer_dish, totalSecs: s.timer_remaining, remaining: s.timer_remaining, intervalId: null, done: false };
+        activeTimers.push(timer);
+        startCountdown(timer);
+        renderTimers();
+      }
+    } catch {}
+  }
+
+  // ── Medications ───────────────────────────────────────────────
+  async function checkMeds() {
+    try {
+      meds = await fetch(`${API}/api/medications`).then(r => r.json());
+      renderMedStatus();
+    } catch {}
+  }
+
+  function renderMedStatus() {
+    const list = document.getElementById('medStatusList');
+    if (!meds.length) { list.innerHTML = '<p class="no-meds">No medications scheduled</p>'; return; }
+    let pendingMed = null;
+    list.innerHTML = meds.map(m => {
+      if (m.status === 'pending' && !pendingMed) pendingMed = m;
+      const dotClass = m.status || 'upcoming';
+      const timeLabel = { taken:'✓ Taken', pending:'Due now!', snoozed:'Snoozed', upcoming: m.time }[m.status] || m.time;
+      return `<div class="med-status-item">
+        <span style="font-size:20px">💊</span>
+        <div class="med-status-info">
+          <div class="med-status-name">${esc(m.name)}</div>
+          <div class="med-status-time">${esc(m.dosage)} · ${timeLabel}</div>
+        </div>
+        <div class="status-dot ${dotClass}" title="${timeLabel}"></div>
+      </div>`;
+    }).join('');
+
+    const banner = document.getElementById('medBanner');
+    if (pendingMed) {
+      pendingMedId = pendingMed.id;
+      document.getElementById('bannerMedName').textContent = pendingMed.name;
+      document.getElementById('bannerMedDose').textContent = pendingMed.dosage;
+      banner.classList.add('visible');
+    } else {
+      banner.classList.remove('visible');
+      pendingMedId = null;
+    }
+  }
+
+  function openMedModal() {
+    if (!pendingMedId) return;
+    const med = meds.find(m => m.id === pendingMedId);
+    if (!med) return;
+    document.getElementById('modalMedName').textContent = med.name;
+    document.getElementById('modalDosage').textContent  = med.dosage;
+    document.getElementById('medModal').classList.add('visible');
+  }
+
+  async function markTaken() {
+    if (!pendingMedId) return;
+    await fetch(`${API}/api/medications/taken`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ med_id: pendingMedId }) });
+    document.getElementById('medModal').classList.remove('visible');
+    showToast('✓ Medication marked as taken');
+    checkMeds();
+  }
+
+  async function snoozeMed() {
+    if (!pendingMedId) return;
+    await fetch(`${API}/api/medications/snooze`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ med_id: pendingMedId }) });
+    document.getElementById('medModal').classList.remove('visible');
+    showToast('⏰ Will remind you in 30 minutes');
+    checkMeds();
+  }
+
+  // ── Notes ─────────────────────────────────────────────────────
+  async function loadNotes() {
+    try {
+      const res    = await fetch(`${API}/api/notes`).then(r => r.json());
+      const banner = document.getElementById('notes-banner');
+      if (res.notes && res.notes.trim()) {
+        document.getElementById('notes-text').textContent = res.notes;
+        banner.style.display = 'block';
+      } else {
+        banner.style.display = 'none';
+      }
+    } catch {}
+  }
+
+  // ── Chatbot ───────────────────────────────────────────────────
+  function openChatbot(prefillMsg) {
+    const groceries = items.filter(i => !i.done).map(i => i.text).join(',');
+    const activeTimer = activeTimers.find(t => !t.done);
+    const mode = activeTimer ? 'cooking' : 'general';
+    const dish = encodeURIComponent(activeTimer ? activeTimer.dish : '');
+    const remaining = activeTimer ? activeTimer.remaining : 0;
+    const grocs = encodeURIComponent(groceries);
+    let url = `/chatbot?mode=${mode}&dish=${dish}&timer=${remaining}&groceries=${grocs}`;
+    window.location.href = url;
+  }
+
+  // ── Toast ─────────────────────────────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // ── Pantry ────────────────────────────────────────────────────
+  async function loadPantry() {
+    try {
+      const res = await fetch(`${API}/api/state`).then(r => r.json());
+      pantry = res.pantry || [];
+      renderPantry();
+    } catch {}
+  }
+
+  function expiryPill(expiry_date) {
+    if (!expiry_date) return '';
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const exp   = new Date(expiry_date + 'T00:00:00');
+    const days  = Math.round((exp - today) / 86400000);
+    if (days < 0)  return `<span class="expiry-pill expiry-urgent">Expired</span>`;
+    if (days === 0) return `<span class="expiry-pill expiry-urgent">Use today</span>`;
+    if (days === 1) return `<span class="expiry-pill expiry-soon">Tomorrow</span>`;
+    if (days <= 3)  return `<span class="expiry-pill expiry-soon">${days} days</span>`;
+    return `<span class="expiry-pill expiry-ok">${days} days</span>`;
+  }
+
+  function renderPantry() {
+    const el    = document.getElementById('pantryItems');
+    const badge = document.getElementById('pantryTabBadge');
+    badge.textContent = pantry.length ? `(${pantry.length})` : '';
+    if (!pantry.length) { el.innerHTML = '<p class="empty-msg">Your pantry is empty.</p>'; return; }
+    el.innerHTML = pantry.map(i => `
+      <div class="checklist-item">
+        <input type="checkbox" id="pc-${i.id}" onchange="eatPantryItem('${i.id}')">
+        <label for="pc-${i.id}">${esc(i.text)}${i.amount ? `<span style="font-size:13px;color:#937662;"> · ${esc(i.amount)}</span>` : ''}</label>
+        ${expiryPill(i.expiry_date)}
+        <input type="date" value="${esc(i.expiry_date||'')}"
+          style="width:110px;font-size:12px;padding:3px 8px;border:1.5px solid rgba(155,155,122,0.3);border-radius:8px;background:#fdf8ed;outline:none;color:#937662;flex-shrink:0;"
+          onchange="updatePantryExpiry('${i.id}', this.value)"
+          title="Use-by date">
+        <button class="del-item" onclick="removePantryItem('${i.id}')">×</button>
+      </div>
+    `).join('');
+  }
+
+  async function addToPantry() {
+    const nameEl   = document.getElementById('pantryAddInput');
+    const amountEl = document.getElementById('pantryAddAmount');
+    const expiryEl = document.getElementById('pantryAddExpiry');
+    const text = nameEl.value.trim();
+    if (!text) return;
+    await fetch(`${API}/api/pantry`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+      text, amount: amountEl.value.trim(), added_by: 'elder',
+      expiry_date: expiryEl.value || null
+    }) });
+    nameEl.value = ''; amountEl.value = ''; expiryEl.value = '';
+    loadPantry(); showToast(`✓ Added to pantry: ${text}`);
+  }
+
+  async function updatePantryExpiry(id, expiry_date) {
+    await fetch(`${API}/api/pantry/${id}`, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ expiry_date: expiry_date || null }) });
+    loadPantry();
+  }
+
+  async function eatPantryItem(id) {
+    setTimeout(async () => {
+      await fetch(`${API}/api/pantry/consume`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ item_id: id }) });
+      loadPantry(); showToast('✓ Logged as eaten');
+    }, 400);
+  }
+
+  async function removePantryItem(id) {
+    await fetch(`${API}/api/pantry/${id}`, { method: 'DELETE' });
+    loadPantry();
+  }
+</script>
+</body>
+</html>

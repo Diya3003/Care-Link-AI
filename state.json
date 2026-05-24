@@ -1,0 +1,172 @@
+{
+  "grocery_list": [],
+  "timer": {
+    "active": false,
+    "dish": "watermelon",
+    "start_time": "2026-05-24T03:43:59.118501+00:00",
+    "duration_minutes": 20,
+    "dismissed": true
+  },
+  "grocery_meta": {
+    "last_updated": "2026-05-24T03:15:30.352654+00:00",
+    "reminder_frequency_days": 7
+  },
+  "family_notes": "woof",
+  "elder_activity": {
+    "last_opened": "2026-05-24T14:48:30.297726+00:00",
+    "last_timer_used": "2026-05-24T03:43:59.118527+00:00"
+  },
+  "medications": [
+    {
+      "id": "17150ebf-9ba0-4424-8d0b-2d6d6157f8bf",
+      "name": "Aspirin",
+      "dosage": "2 tablets",
+      "time": "17:12",
+      "active": true
+    }
+  ],
+  "medication_log": {
+    "17150ebf-9ba0-4424-8d0b-2d6d6157f8bf_2026-05-23": {
+      "status": "taken",
+      "taken_at": "2026-05-24T00:20:25.719579+00:00",
+      "snoozed_until": null
+    }
+  },
+  "cooked_history": [
+    {
+      "id": "f9b0e34a-16ec-4375-adeb-df6ca7e5d9c7",
+      "dish": "watermelon",
+      "cooked_at": "2026-05-24T04:00:25.333727+00:00",
+      "eat_by": "Sunday, May 24, 2026",
+      "eat_by_reason": "Fresh fruit is best eaten the same day you prepare it."
+    },
+    {
+      "id": "6b0e1778-1d0d-4be3-92f0-ccf47875509a",
+      "dish": "Food",
+      "cooked_at": "2026-05-24T03:36:40.025443+00:00",
+      "eat_by": "Monday, May 25",
+      "eat_by_reason": "Cooked food is best eaten within 2 days to stay safe and tasty."
+    },
+    {
+      "id": "1a16fb5d-e690-4ad8-9d60-2baaed24871e",
+      "dish": "Food",
+      "cooked_at": "2026-05-24T03:35:33.124360+00:00",
+      "eat_by": "Monday, May 25",
+      "eat_by_reason": "Cooked food is best eaten within 2 days to stay safe and tasty."
+    },
+    {
+      "id": "0af1b083-ed7a-4880-8d80-c4627a33a034",
+      "dish": "Food",
+      "cooked_at": "2026-05-24T03:35:22.936039+00:00",
+      "eat_by": "Within 1-2 days",
+      "eat_by_reason": "Store in fridge and eat soon."
+    },
+    {
+      "id": "b41d772e-637a-4dc5-877b-b592965664f7",
+      "dish": "Food",
+      "cooked_at": "2026-05-24T03:35:21.643303+00:00",
+      "eat_by": "Monday, May 25",
+      "eat_by_reason": "Cooked food is best eaten soon after it's made."
+    },
+    {
+      "id": "8f9ee197-6faa-4f77-915d-9f7c0db160ad",
+      "dish": "Steak",
+      "cooked_at": "2026-05-24T03:10:02.902424+00:00",
+      "eat_by": "Within 1-2 days",
+      "eat_by_reason": "Store in fridge and eat soon."
+    },
+    {
+      "id": "f61e015e-66ee-4d7c-ba1b-2880bd8d77e3",
+      "dish": "Pasta",
+      "cooked_at": "2026-05-24T02:26:32.965551+00:00",
+      "eat_by": "Within 1-2 days",
+      "eat_by_reason": "Store in fridge and eat soon."
+    },
+    {
+      "id": "3eec2290-3ccd-47b4-82c0-e3f7a52cfbb9",
+      "dish": "Rice",
+      "cooked_at": "2026-05-24T02:26:14.900690+00:00",
+      "eat_by": "Within 1-2 days",
+      "eat_by_reason": "Store in fridge and eat soon."
+    },
+    {
+      "id": "c4a60de4-38bd-47a7-a39e-125abb0fa23f",
+      "dish": "Other",
+      "cooked_at": "2026-05-24T02:26:08.104943+00:00",
+      "eat_by": "Within 1-2 days",
+      "eat_by_reason": "Store in fridge and eat soon."
+    },
+    {
+      "id": "c49ecf4a-9173-445e-86e1-5f4ab7fb2c45",
+      "dish": "Tea",
+      "cooked_at": "2026-05-24T01:55:53.109096+00:00",
+      "eat_by": "EAT BY:",
+      "eat_by_reason": ""
+    }
+  ],
+  "pantry": [
+    {
+      "id": "e735b2f7-5989-4f92-a5e8-c01c7b63ef89",
+      "text": "egg",
+      "added_by": "family",
+      "claimed_by": null,
+      "delivery_date": null,
+      "done": true,
+      "timestamp": "2026-05-24T00:11:20.524861+00:00"
+    },
+    {
+      "id": "858fb21d-c721-49dc-92e7-5b6658e49bcb",
+      "text": "chocolate",
+      "amount": "",
+      "added_by": "elder",
+      "claimed_by": null,
+      "delivery_date": null,
+      "done": true,
+      "timestamp": "2026-05-24T03:43:19.470049+00:00"
+    }
+  ],
+  "nutrition_logs": [
+    {
+      "timestamp": "2026-05-23T17:19:16.396515",
+      "meal": "I ate sausage bacon and fish",
+      "cals": 700,
+      "prot": 50
+    },
+    {
+      "timestamp": "2026-05-23T20:10:59.301182",
+      "meal": "I just ate steak bro",
+      "cals": 500,
+      "prot": 40
+    },
+    {
+      "timestamp": "2026-05-23T20:56:11.841828",
+      "meal": "Test soup",
+      "cals": 250,
+      "prot": 0,
+      "source": "pantry"
+    },
+    {
+      "timestamp": "2026-05-23T21:00:13.435849",
+      "meal": "tomato",
+      "cals": 0,
+      "prot": 0,
+      "source": "pantry"
+    },
+    {
+      "timestamp": "2026-05-23T21:00:17.019351",
+      "meal": "dino nuggets",
+      "cals": 0,
+      "prot": 0,
+      "source": "pantry"
+    }
+  ],
+  "profile": {
+    "name": "Penelope",
+    "age": "77",
+    "weight": "",
+    "cuisine": "Vegan",
+    "restrictions": "Low sodium",
+    "allergies": "cardamom",
+    "goals_concerns": "Make sure she remembers to eat 3 meals a day"
+  }
+}
